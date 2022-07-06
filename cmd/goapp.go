@@ -1,17 +1,62 @@
 package main
 
-import "os"
+import (
+	"context"
+	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"net"
+	"net/http"
+	"os"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
+)
+
+const (
+	defaultPort = "9999"
+	defaultHost = "0.0.0.0"
+)
 
 func main() {
+
+	port, ok := "default" //писать сюда
+	if !ok {
+		port = defaultPort
+	}
+
+	host, ok := "default" //писать сюда
+	if !ok {
+		host = defaultHost
+	}
+
+	if err := execute(net.JoinHostPort(host, port)); err != nil {
+		os.Exit(1)
+	}
+
 }
 
-func logger() *zap.SugaredLogger {
+func execute(addr string) (err error) {
+	ctx := context.Background()
+
+	logger := loggerInit()
+
+	mux := chi.NewRouter()
+	application := server.NewServer(logger, mux)
+	application.Init()
+
+	server := &http.Server{
+		Addr:    addr,
+		Handler: application,
+	}
+	return server.ListenAndServe()
+}
+
+func loggerInit() *zap.SugaredLogger {
 	encoderConfig := zap.NewDevelopmentEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
 	encore := zapcore.NewJSONEncoder(encoderConfig)
-	file, err := os.Create("./internal/log/logs.txt")
+	file, err := os.Create("./logs/logs.txt")
 	if err != nil {
 		panic("Error with creating file")
 	}

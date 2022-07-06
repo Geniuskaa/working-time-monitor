@@ -6,6 +6,7 @@ import (
 )
 
 type App struct {
+	Port string `yaml:"port"`
 }
 
 type DB struct {
