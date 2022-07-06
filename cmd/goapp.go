@@ -3,7 +3,6 @@ package main
 import "os"
 
 func main() {
-
 }
 
 func logger() *zap.SugaredLogger {
