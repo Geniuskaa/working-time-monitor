@@ -7,6 +7,7 @@ import (
 
 type App struct {
 	Port string `yaml:"port"`
+	Host string `yaml:"host"`
 }
 
 type DB struct {
@@ -18,11 +19,11 @@ type Config struct {
 }
 
 func NewConfig(profile string) (*Config, error) {
-	cfg := &Config{}
+	cfg := Config{}
 	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
-	err := cleanenv.ReadConfig(cfgPath, cfg)
+	err := cleanenv.ReadConfig(cfgPath, &cfg)
 	if err != nil {
 		return nil, err
 	}
-	return cfg, nil
+	return &cfg, nil
 }

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net"
 	"net/http"
 	"os"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
 )
 
@@ -17,14 +17,18 @@ const (
 )
 
 func main() {
+	conf, err := config.NewConfig("dev")
+	if err != nil {
+		panic("Error with reading config")
+	}
 
-	port, ok := "default" //писать сюда
-	if !ok {
+	port := conf.App.Port //писать сюда
+	if port == "" {
 		port = defaultPort
 	}
 
-	host, ok := "default" //писать сюда
-	if !ok {
+	host := conf.App.Host //писать сюда
+	if host == "" {
 		host = defaultHost
 	}
 
@@ -35,7 +39,7 @@ func main() {
 }
 
 func execute(addr string) (err error) {
-	ctx := context.Background()
+	//ctx := context.Background()
 
 	logger := loggerInit()
 
