@@ -1,0 +1,9 @@
+/configs/local.env
+
+# Goland
+.idea/
+bin/
+.DS_Store
+.pre-commit-config.yaml
+/mynewtheme/
+
