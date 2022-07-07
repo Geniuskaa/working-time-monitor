@@ -11,6 +11,12 @@ type App struct {
 }
 
 type DB struct {
+	MigrationsSourceURL string `yaml:"migrationsSourceURL"`
+	Hostname            string `yaml:"hostname"`
+	Port                int    `yaml:"port"`
+	Username            string `yaml:"username"`
+	Password            string `yaml:"password"`
+	DatabaseName        string `yaml:"databaseName"`
 }
 
 type Config struct {
