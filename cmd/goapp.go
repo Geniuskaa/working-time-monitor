@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -22,29 +27,43 @@ func main() {
 		panic("Error with reading config")
 	}
 
-	port := conf.App.Port //писать сюда
+	port := conf.App.Port
 	if port == "" {
 		port = defaultPort
 	}
 
-	host := conf.App.Host //писать сюда
+	host := conf.App.Host
 	if host == "" {
 		host = defaultHost
 	}
 
-	if err := execute(net.JoinHostPort(host, port)); err != nil {
+	if err := execute(net.JoinHostPort(host, port), conf); err != nil {
 		os.Exit(1)
 	}
 
 }
 
-func execute(addr string) (err error) {
-	//ctx := context.Background()
+func execute(addr string, conf *config.Config) (err error) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	pg_con_string := fmt.Sprintf("port=%d host=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		conf.DB.Port, conf.DB.Hostname, conf.DB.Username, conf.DB.Password, conf.DB.DatabaseName)
+
+	db, err := sqlx.Open("postgres", pg_con_string)
+	if err != nil {
+		log.Print(err)
+		panic("Error when setting Database")
+	}
+	defer func() {
+		cancel()
+		db.Close()
+	}()
 
 	logger := loggerInit()
 
 	mux := chi.NewRouter()
-	application := server.NewServer(logger, mux)
+	application := server.NewServer(ctx, logger, mux, db)
 	application.Init()
 
 	server := &http.Server{

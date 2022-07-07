@@ -6,4 +6,8 @@ bin/
 .DS_Store
 .pre-commit-config.yaml
 /mynewtheme/
-
+.configs/
+.docker-entrypoint-initdb.d/
+.docker-compose.yml
+.migrations/
+.logs/
