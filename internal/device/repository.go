@@ -41,7 +41,7 @@ func (r *repository) GetMobileDevices(ctx context.Context) ([]*MobileDevice, err
 }
 
 func (r *repository) GetMobileDevicesByOs(ctx context.Context, os string) ([]*MobileDevice, error) {
-	rows, err := r.db.QueryContext(ctx, "SELECT d.id, d.name, d.os  FROM mobile_devices d WHERE d.os = ?", os)
+	rows, err := r.db.QueryContext(ctx, "SELECT d.id, d.name, d.os  FROM mobile_devices d WHERE d.os = $1", os)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (r *repository) GetMobileDevicesByOs(ctx context.Context, os string) ([]*Mo
 
 func (r *repository) GetLatestRentingDeviceByDeviceId(ctx context.Context, deviceId int) (*RentingDevice, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT d.id, d.user_id, d.created_at, d.updated_at FROM renting_devices d "+
-		"WHERE d.mobile_device_id = ? ORDER BY d.created_at DESC LIMIT 1", deviceId)
+		"WHERE d.mobile_device_id = $1 ORDER BY d.created_at DESC LIMIT 1", deviceId)
 	d := RentingDevice{}
 	err := row.Scan(&d.Id, &d.UserId, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
@@ -72,7 +72,7 @@ func (r *repository) GetLatestRentingDeviceByDeviceId(ctx context.Context, devic
 
 func (r *repository) GetRentingDeviceById(ctx context.Context, id int) (*RentingDevice, error) {
 	row := r.db.QueryRowContext(ctx, "SELECT d.id, d.mobile_device_id, d.user_id, d.created_at, d.updated_at "+
-		"FROM renting_devices d WHERE id = ?", id)
+		"FROM renting_devices d WHERE id = $1", id)
 	d := RentingDevice{}
 	err := row.Scan(&d.Id, &d.MobileDevice.Id, &d.UserId, &d.CreatedAt, &d.UpdatedAt)
 	if err != nil {
