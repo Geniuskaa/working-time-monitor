@@ -3,6 +3,7 @@ module scb-mobile/scb-monitor/scb-monitor-backend/go-app
 go 1.18
 
 require (
+	github.com/Nerzal/gocloak/v11 v11.2.0
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/ilyakaznacheev/cleanenv v1.3.0
@@ -14,7 +15,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
-	github.com/Nerzal/gocloak/v11 v11.2.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
