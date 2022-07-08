@@ -13,7 +13,7 @@ type User struct {
 	Id          int              `json:"id"`
 	Username    string           `json:"username"`
 	DisplayName string           `json:"display_name"`
-	Employee    Employee         `json:"employee"` // Подумать насколько уместно хранить сущность, а не id
+	EmployeeId  int              `json:"employee"`
 	Email       string           `json:"email"`
 	Phone       string           `json:"phone"`
 	Birthday    pgtype.Date      `json:"birthday"`
