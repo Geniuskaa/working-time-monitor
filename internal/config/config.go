@@ -24,12 +24,15 @@ type Config struct {
 	DB  DB  `yaml:"db"`
 }
 
-func NewConfig(profile string) (*Config, error) {
-	cfg := Config{}
+func NewConfig(profile string) (cfg *Config, port, host string, err error) {
+	cfg = &Config{}
 	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
-	err := cleanenv.ReadConfig(cfgPath, &cfg)
+	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
-		return nil, err
+		return nil, "", "", err
 	}
-	return &cfg, nil
+	port = cfg.App.Port
+	host = cfg.App.Host
+
+	return cfg, port, host, nil
 }

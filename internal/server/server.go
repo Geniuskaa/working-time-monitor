@@ -4,9 +4,10 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jmoiron/sqlx"
+
 	"go.uber.org/zap"
 	"net/http"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/user"
 )
 
@@ -14,10 +15,11 @@ type Server struct {
 	ctx    context.Context
 	logger *zap.SugaredLogger
 	mux    *chi.Mux
-	db     *sqlx.DB
+	db     *postgres.Db
+	serv   *http.Server
 }
 
-func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *sqlx.DB) *Server {
+func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *postgres.Db) *Server {
 	return &Server{ctx: ctx, logger: logger, mux: mux, db: db}
 }
 
@@ -26,7 +28,15 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) Init() {
+	serv := user.NewService(s.db, s.logger)
+	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 
-	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, s.db).Routes())
+}
+func (s *Server) Start(addr string) error {
+	s.serv = &http.Server{
+		Addr:    addr,
+		Handler: s,
+	}
 
+	return s.serv.ListenAndServe()
 }
