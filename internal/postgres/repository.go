@@ -1,21 +1,17 @@
-package user
+package postgres
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 )
 
-type repository struct {
-	db *sqlx.DB
+type UserRepo interface {
+	GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error)
+	GetEmplList(ctx context.Context) ([]*Employee, error)
 }
 
-func NewRepository(db *sqlx.DB) *repository {
-	return &repository{db: db}
-}
+func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {
 
-func (r *repository) getUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {
-
-	rows, err := r.db.QueryContext(ctx, `SELECT users.id,
+	rows, err := d.Db.QueryContext(ctx, `SELECT users.id,
        users.display_name,
        array_to_string(array_agg(pr.name), ', ')
 from users
@@ -50,15 +46,14 @@ limit 100;`, id)
 	return result, nil
 }
 
-func (r *repository) getEmplList(ctx context.Context) ([]*Employee, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT * FROM employees limit 50`)
+func (d *Db) GetEmplList(ctx context.Context) ([]*Employee, error) {
+	rows, err := d.Db.QueryContext(ctx, `SELECT * FROM employees limit 50`)
 	if err != nil {
 		return nil, err
 	}
 
 	defer rows.Close()
 
-	//result := make([]*Employee, 1)
 	var result []*Employee
 	for rows.Next() {
 		empl := &Employee{}

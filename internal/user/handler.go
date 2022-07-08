@@ -7,7 +7,6 @@ import (
 	"go.uber.org/zap"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type handler struct {
@@ -30,27 +29,24 @@ func (h *handler) Routes() chi.Router {
 }
 
 func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http.Request) {
-	splittedURL := strings.Split(request.URL.String(), "/")
-	arg, err := strconv.Atoi(splittedURL[len(splittedURL)-1])
+	id, err := strconv.Atoi(chi.URLParam(request, "id"))
+
 	if err != nil {
 		h.log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when splitting URL"))
+		http.Error(writer, "Error when splitting URL", http.StatusInternalServerError)
 		return
 	}
 
-	users, err := h.service.getUsersByEmployeeId(h.ctx, arg)
+	users, err := h.service.getUsersByEmployeeId(h.ctx, id)
 	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when geting users"))
+		http.Error(writer, "Error when geting users", http.StatusInternalServerError)
 		return
 	}
 
 	body, err := json.Marshal(users)
 	if err != nil {
 		h.log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when wrapping body"))
+		http.Error(writer, "Error when wrapping body", http.StatusInternalServerError)
 		return
 	}
 
@@ -58,8 +54,7 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 	_, err = writer.Write(body)
 	if err != nil {
 		h.log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when writing response body"))
+		http.Error(writer, "Error when writing response body", http.StatusInternalServerError)
 		return
 	}
 
@@ -69,16 +64,14 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Request) {
 	emplList, err := h.service.getEmployeeList(h.ctx)
 	if err != nil {
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when geting employee list"))
+		http.Error(writer, "Error when geting employee list", http.StatusInternalServerError)
 		return
 	}
 
 	body, err := json.Marshal(emplList)
 	if err != nil {
 		h.log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when wrapping body"))
+		http.Error(writer, "Error when wrapping body", http.StatusInternalServerError)
 		return
 	}
 
@@ -86,8 +79,7 @@ func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Requ
 	_, err = writer.Write(body)
 	if err != nil {
 		h.log.Error(err)
-		writer.WriteHeader(http.StatusInternalServerError)
-		writer.Write([]byte("Error when writing response body"))
+		http.Error(writer, "Error when writing response body", http.StatusInternalServerError)
 		return
 	}
 

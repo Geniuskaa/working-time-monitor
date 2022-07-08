@@ -2,41 +2,21 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"net"
-	"net/http"
 	"os"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
 )
 
-const (
-	defaultPort = "9999"
-	defaultHost = "0.0.0.0"
-)
-
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, port, host, err := config.NewConfig("dev")
 	if err != nil {
 		panic("Error with reading config")
-	}
-
-	port := conf.App.Port
-	if port == "" {
-		port = defaultPort
-	}
-
-	host := conf.App.Host
-	if host == "" {
-		host = defaultHost
 	}
 
 	if err := execute(net.JoinHostPort(host, port), conf); err != nil {
@@ -49,50 +29,17 @@ func execute(addr string, conf *config.Config) (err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := loggerInit()
 
-	pg_con_string := fmt.Sprintf("port=%d host=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		conf.DB.Port, conf.DB.Hostname, conf.DB.Username, conf.DB.Password, conf.DB.DatabaseName)
-
-	db, err := sqlx.Open("postgres", pg_con_string)
-	if err != nil {
-		logger.Error(err)
-		panic("Error when setting Database")
-	}
+	db := postgres.NewDb(logger, conf)
 	defer func() {
 		cancel()
 		db.Close()
 	}()
 
-	//БЛОК миграции
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
-	if err != nil {
-		logger.Error(err)
-		panic("Error when migrate DB")
-	}
-
-	migrationsPath := conf.DB.MigrationsSourceURL
-	m, err := migrate.NewWithDatabaseInstance(migrationsPath, conf.DB.DatabaseName, driver)
-	if err != nil {
-		logger.Error(err)
-		panic("Error when migrate DB")
-	}
-
-	err = m.Up()
-	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		logger.Error(err)
-		panic("Error when migrate DB")
-	}
-	//БЛОК миграции
-
 	mux := chi.NewRouter()
 	application := server.NewServer(ctx, logger, mux, db)
 	application.Init()
 
-	ser := &http.Server{
-		Addr:    addr,
-		Handler: application,
-	}
-	return ser.ListenAndServe()
+	return application.Start(addr)
 }
 
 func loggerInit() *zap.SugaredLogger {

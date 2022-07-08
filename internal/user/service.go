@@ -3,19 +3,20 @@ package user
 import (
 	"context"
 	"go.uber.org/zap"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 )
 
 type Service struct {
-	repo *repository
+	repo *postgres.Db
 	log  *zap.SugaredLogger
 }
 
-func NewService(repo *repository, log *zap.SugaredLogger) *Service {
+func NewService(repo *postgres.Db, log *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, log: log}
 }
 
 func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithProjectsDTO, error) {
-	users, err := s.repo.getUsersByEmplId(ctx, id)
+	users, err := s.repo.GetUsersByEmplId(ctx, id)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -35,7 +36,7 @@ func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithP
 }
 
 func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
-	emplList, err := s.repo.getEmplList(ctx)
+	emplList, err := s.repo.GetEmplList(ctx)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
