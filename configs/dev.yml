@@ -1,0 +1,11 @@
+app:
+  port: 9999
+  host: 0.0.0.0
+
+db:
+    migrationsSourceURL: file://migrations
+    hostname: localhost
+    port: 5900
+    username: app
+    password: pass
+    databaseName: test

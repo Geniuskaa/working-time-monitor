@@ -9,5 +9,8 @@ bin/
 .configs/
 .docker-entrypoint-initdb.d/
 .docker-compose.yml
+.docker-compose.yaml
 .migrations/
 .logs/
+
+

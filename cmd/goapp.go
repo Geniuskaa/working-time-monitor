@@ -2,39 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"log"
 	"net"
-	"net/http"
 	"os"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
 )
 
-const (
-	defaultPort = "9999"
-	defaultHost = "0.0.0.0"
-)
-
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, port, host, err := config.NewConfig("dev")
 	if err != nil {
 		panic("Error with reading config")
-	}
-
-	port := conf.App.Port
-	if port == "" {
-		port = defaultPort
-	}
-
-	host := conf.App.Host
-	if host == "" {
-		host = defaultHost
 	}
 
 	if err := execute(net.JoinHostPort(host, port), conf); err != nil {
@@ -46,31 +28,19 @@ func main() {
 func execute(addr string, conf *config.Config) (err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	pg_con_string := fmt.Sprintf("port=%d host=%s user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		conf.DB.Port, conf.DB.Hostname, conf.DB.Username, conf.DB.Password, conf.DB.DatabaseName)
+	logger := loggerInit()
 
-	db, err := sqlx.Open("postgres", pg_con_string)
-	if err != nil {
-		log.Print(err)
-		panic("Error when setting Database")
-	}
+	db := postgres.NewDb(logger, conf)
 	defer func() {
 		cancel()
 		db.Close()
 	}()
 
-	logger := loggerInit()
-
 	mux := chi.NewRouter()
 	application := server.NewServer(ctx, logger, mux, db)
 	application.Init()
 
-	server := &http.Server{
-		Addr:    addr,
-		Handler: application,
-	}
-	return server.ListenAndServe()
+	return application.Start(addr)
 }
 
 func loggerInit() *zap.SugaredLogger {
