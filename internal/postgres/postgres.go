@@ -16,6 +16,7 @@ type Db struct {
 }
 
 type Repo interface {
+	DeviceRepo
 	UserRepo
 	Close()
 }

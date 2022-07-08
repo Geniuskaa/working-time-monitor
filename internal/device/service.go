@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5/pgtype"
 	"go.uber.org/zap"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/model"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"time"
 )
 
@@ -14,10 +16,10 @@ type Service interface {
 
 type service struct {
 	log  *zap.SugaredLogger
-	repo Repository
+	repo postgres.DeviceRepo
 }
 
-func NewService(log *zap.SugaredLogger, repository Repository) Service {
+func NewService(log *zap.SugaredLogger, repository postgres.DeviceRepo) Service {
 	return &service{repo: repository, log: log}
 }
 
@@ -44,9 +46,9 @@ func (s *service) GetMobileDevices(ctx context.Context, os string) ([]*RentingDe
 }
 
 func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*RentingDeviceResponse, error) {
-	d := RentingDevice{
+	d := model.RentingDevice{
 		UserId:       userId,
-		MobileDevice: MobileDevice{Id: deviceId},
+		MobileDevice: model.MobileDevice{Id: deviceId},
 		CreatedAt:    pgtype.Timestamp{Time: time.Now(), Valid: true},
 	}
 	id, err := s.repo.SaveRentingDevice(ctx, &d)
