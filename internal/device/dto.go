@@ -1,7 +1,7 @@
 package device
 
 type RentingDeviceResponse struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-	Free bool   `json:"free"`
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	DisplayName string `json:"display_name"`
 }

@@ -12,11 +12,17 @@ type Device struct {
 }
 
 type RentingDevice struct {
-	Id           int              `json:"id"`
-	MobileDevice MobileDevice     `json:"mobileDevice"`
-	UserId       int              `json:"userId"`
-	CreatedAt    pgtype.Timestamp `json:"createdAt"`
-	UpdatedAt    pgtype.Timestamp `json:"updatedAt"`
+	Id           int               `json:"id"`
+	MobileDevice MobileDevice      `json:"mobileDevice"`
+	User         RentingDeviceUser `json:"user"`
+	CreatedAt    pgtype.Timestamp  `json:"createdAt"`
+	UpdatedAt    pgtype.Timestamp  `json:"updatedAt"`
+}
+
+type RentingDeviceUser struct {
+	Id          int    `json:"id"`
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
 }
 
 type MobileDevice struct {
