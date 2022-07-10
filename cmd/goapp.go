@@ -37,7 +37,7 @@ func execute(addr string, conf *config.Config) (err error) {
 	}()
 
 	mux := chi.NewRouter()
-	application := server.NewServer(ctx, logger, mux, db)
+	application := server.NewServer(ctx, logger, mux, db, conf)
 	application.Init()
 
 	return application.Start(addr)

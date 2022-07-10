@@ -7,6 +7,17 @@ import (
 type UserRepo interface {
 	GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error)
 	GetEmplList(ctx context.Context) ([]*Employee, error)
+	GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error)
+}
+
+func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error) {
+	principal := UserPrincipal{}
+	row := d.Db.QueryRowContext(ctx, "SELECT u.id, u.username, u.email FROM users u WHERE u.username = $1", username)
+	err := row.Scan(&principal.Id, &principal.Username, &principal.Email)
+	if err != nil {
+		return nil, err
+	}
+	return &principal, nil
 }
 
 func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {

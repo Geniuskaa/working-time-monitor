@@ -9,3 +9,9 @@ db:
     username: app
     password: pass
     databaseName: test
+
+keycloak:
+  host: host
+  clientId: clientId
+  clientSecret: clientSecret
+  realm: realm
