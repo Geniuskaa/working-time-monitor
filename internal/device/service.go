@@ -39,20 +39,20 @@ func (s *service) GetMobileDevices(ctx context.Context, os string) ([]*RentingDe
 
 	rentingDeviceResponses := make([]*RentingDeviceResponse, 0, len(devices))
 	for _, device := range devices {
-		owner := s.getMobileDeviceOwner(ctx, device.Id)
+		displayName := s.getRentingDeviceOwnerDisplayName(ctx, device.Id)
 		rentingDeviceResponses = append(
 			rentingDeviceResponses,
 			&RentingDeviceResponse{
 				Id:          device.Id,
 				Name:        device.Name,
-				DisplayName: owner.DisplayName})
+				DisplayName: displayName})
 	}
 	return rentingDeviceResponses, nil
 }
 
 func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*RentingDeviceResponse, error) {
-	owner := s.getMobileDeviceOwner(ctx, deviceId)
-	if !owner.Free {
+	owner := s.getRentingDeviceOwnerDisplayName(ctx, deviceId)
+	if owner != "" {
 		return nil, errors.New("mobile device already rented")
 	}
 	d := model.RentingDevice{
@@ -65,14 +65,18 @@ func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*Re
 		return nil, err
 	}
 
-	newRentingDevice, err := s.repo.GetRentingDeviceById(ctx, id)
+	rentingDevice, err := s.repo.GetRentingDeviceById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	mobileDevice, err := s.repo.GetMobileDeviceById(ctx, rentingDevice.MobileDevice.Id)
 	if err != nil {
 		return nil, err
 	}
 	return &RentingDeviceResponse{
 		Id:          deviceId,
-		Name:        newRentingDevice.MobileDevice.Name,
-		DisplayName: newRentingDevice.User.DisplayName,
+		Name:        mobileDevice.Name,
+		DisplayName: rentingDevice.User.DisplayName,
 	}, nil
 }
 
@@ -85,28 +89,31 @@ func (s *service) ReturnDevice(ctx context.Context, deviceId int, userId int) (*
 	if latestRentingDevice.User.Id != userId {
 		return nil, errors.New("the user who rented the device and who is trying to return are not the same")
 	}
-	return nil, nil
-}
-
-type mobileDeviceOwner struct {
-	DisplayName string
-	Free        bool
-}
-
-func (s *service) getMobileDeviceOwner(ctx context.Context, deviceId int) *mobileDeviceOwner {
-	rentingDevice, err := s.repo.GetLatestRentingDeviceByDeviceId(ctx, deviceId)
-	var free bool
+	if latestRentingDevice.UpdatedAt.Valid {
+		return nil, errors.New("")
+	}
+	latestRentingDevice.UpdatedAt = pgtype.Timestamp{Time: time.Now(), Valid: true}
+	err = s.repo.UpdateRentingDevice(ctx, latestRentingDevice.Id, latestRentingDevice)
 	if err != nil {
-		free = true
-	} else {
-		free = !rentingDevice.UpdatedAt.Valid
+		return nil, err
 	}
-	var displayName string
-	if !free {
-		displayName = rentingDevice.User.DisplayName
+	mobileDevice, err := s.repo.GetMobileDeviceById(ctx, latestRentingDevice.MobileDevice.Id)
+	if err != nil {
+		return nil, err
 	}
-	return &mobileDeviceOwner{
-		DisplayName: displayName,
-		Free:        free,
+	return &RentingDeviceResponse{
+		Id:   deviceId,
+		Name: mobileDevice.Name,
+	}, nil
+}
+
+func (s *service) getRentingDeviceOwnerDisplayName(ctx context.Context, deviceId int) string {
+	rentingDevice, err := s.repo.GetLatestRentingDeviceByDeviceId(ctx, deviceId)
+	if err != nil {
+		return ""
 	}
+	if !rentingDevice.UpdatedAt.Valid {
+		return rentingDevice.User.DisplayName
+	}
+	return ""
 }

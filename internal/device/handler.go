@@ -90,5 +90,35 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
-	// TODO
+	principal, err := auth.GetUserPrincipal(r)
+	if err != nil {
+		h.log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	deviceId, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		h.log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	d, err := h.service.ReturnDevice(context.Background(), deviceId, principal.Id)
+	if err != nil {
+		h.log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	body, err := json.Marshal(d)
+	if err != nil {
+		h.log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	_, err = w.Write(body)
+	if err != nil {
+		h.log.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 }

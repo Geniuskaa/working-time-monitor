@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/model"
 )
 
 type DeviceRepo interface {
+	GetMobileDeviceById(ctx context.Context, id int) (*model.MobileDevice, error)
 	GetMobileDevices(ctx context.Context) ([]*model.MobileDevice, error)
 	GetMobileDevicesByOs(ctx context.Context, os string) ([]*model.MobileDevice, error)
 	GetLatestRentingDeviceByDeviceId(ctx context.Context, deviceId int) (*model.RentingDevice, error)
@@ -35,7 +37,7 @@ func (d *Db) GetMobileDevices(ctx context.Context) ([]*model.MobileDevice, error
 }
 
 func (d *Db) GetMobileDevicesByOs(ctx context.Context, os string) ([]*model.MobileDevice, error) {
-	q := "SELECT d.id, d.name, d.os  FROM mobile_devices d WHERE d.os = :os"
+	q := "SELECT d.id, d.name, d.os  FROM mobile_devices d WHERE d.os = $1"
 	rows, err := d.Db.QueryContext(ctx, q, os)
 	if err != nil {
 		return nil, err
@@ -61,8 +63,8 @@ func (d *Db) GetLatestRentingDeviceByDeviceId(ctx context.Context, deviceId int)
 		"WHERE d.mobile_device_id = $1 " +
 		"ORDER BY d.created_at DESC LIMIT 1"
 	row := d.Db.QueryRowContext(ctx, q, deviceId)
-	device := model.RentingDevice{}
-	err := row.Scan(&device.Id, &device.User.Id, &device.User.Username, &device.User.DisplayName, &device.CreatedAt, &device.UpdatedAt)
+	device := model.RentingDevice{MobileDevice: model.MobileDevice{Id: deviceId}}
+	err := row.Scan(&device.Id, &device.CreatedAt, &device.UpdatedAt, &device.User.Id, &device.User.Username, &device.User.DisplayName)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +96,25 @@ func (d *Db) SaveRentingDevice(ctx context.Context, rentingDevice *model.Renting
 }
 
 func (d *Db) UpdateRentingDevice(ctx context.Context, id int, device *model.RentingDevice) error {
-	// TODO
+	q := "UPDATE renting_devices SET mobile_device_id = $2, user_id = $3, updated_at = $4 WHERE id = $1"
+	result, err := d.Db.Exec(q, id, device.MobileDevice.Id, device.User.Id, device.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if rowsAffected != 1 {
+		return errors.New("update renting device error")
+	}
 	return nil
+}
+
+func (d *Db) GetMobileDeviceById(ctx context.Context, id int) (*model.MobileDevice, error) {
+	q := "SELECT id, name, os FROM mobile_devices WHERE id = $1"
+	row := d.Db.QueryRowContext(ctx, q, id)
+	device := model.MobileDevice{}
+	err := row.Scan(&device.Id, &device.Name, &device.Os)
+	if err != nil {
+		return nil, err
+	}
+	return &device, nil
 }
