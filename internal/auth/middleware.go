@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"
@@ -13,16 +12,18 @@ import (
 )
 
 type authMiddleware struct {
-	keycloak *keycloak
-	db       *postgres.Db
-	log      *zap.SugaredLogger
+	cfg *config.Config
+	db  *postgres.Db
+	log *zap.SugaredLogger
 }
 
 func NewMiddleware(cfg *config.Config, db *postgres.Db, log *zap.SugaredLogger) *authMiddleware {
-	return &authMiddleware{keycloak: newKeycloak(cfg), db: db, log: log}
+	return &authMiddleware{cfg: cfg, db: db, log: log}
 }
 
-func (m *authMiddleware) Authenticate(next http.Handler) http.Handler {
+const keycloakUsernameClaimKey string = "preferred_username"
+
+func (m *authMiddleware) Middleware(next http.Handler) http.Handler {
 
 	f := func(w http.ResponseWriter, r *http.Request) {
 
@@ -33,18 +34,14 @@ func (m *authMiddleware) Authenticate(next http.Handler) http.Handler {
 		}
 
 		token = m.extractBearerToken(token)
-		if token == "" {
+		jwtToken, err := jwt.Parse(token, m.cfg.Keycloak.JWK.Keyfunc)
+		if err != nil || !jwtToken.Valid {
 			http.Error(w, fmt.Sprintf("Invalid token %s", token), http.StatusUnauthorized)
 			return
 		}
-
-		result, err := m.keycloak.gocloak.RetrospectToken(context.Background(), token, m.keycloak.clientId, m.keycloak.clientSecret, m.keycloak.realm)
-		if !*result.Active {
-			http.Error(w, "Account is not active", http.StatusUnauthorized)
-			return
-		}
-		username, err := m.extractUsername(token)
-		if err != nil {
+		claims, ok := jwtToken.Claims.(jwt.MapClaims)
+		username, ok := claims[keycloakUsernameClaimKey].(string)
+		if !ok {
 			http.Error(w, fmt.Sprintf("Invalid token %s", token), http.StatusUnauthorized)
 			return
 		}
@@ -67,18 +64,4 @@ func (m *authMiddleware) extractBearerToken(token string) string {
 		return ""
 	}
 	return strings.Replace(token, "Bearer ", "", 1)
-}
-
-const keycloakUsernameClaimKey string = "preferred_username"
-
-func (m *authMiddleware) extractUsername(token string) (string, error) {
-	parser := jwt.NewParser(jwt.WithoutClaimsValidation())
-	t, _, err := parser.ParseUnverified(token, jwt.MapClaims{})
-	if err != nil {
-		return "", err
-	}
-	if claims, ok := t.Claims.(jwt.MapClaims); ok {
-		return claims[keycloakUsernameClaimKey].(string), nil
-	}
-	return "", errors.New("error extracting username")
 }

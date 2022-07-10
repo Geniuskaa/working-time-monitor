@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/MicahParks/keyfunc"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -20,10 +21,10 @@ type DB struct {
 }
 
 type Keycloak struct {
-	Host         string `yaml:"host"`
-	ClientId     string `yaml:"clientId"`
-	ClientSecret string `yaml:"clientSecret"`
-	Realm        string `yaml:"realm"`
+	BasePath  string `yaml:"base-path"`
+	Realm     string `yaml:"realm"`
+	PublicKey []byte
+	JWK       *keyfunc.JWKS
 }
 
 type Config struct {
@@ -32,15 +33,12 @@ type Config struct {
 	Keycloak Keycloak `yaml:"keycloak"`
 }
 
-func NewConfig(profile string) (cfg *Config, port, host string, err error) {
+func NewConfig(profile string) (cfg *Config, err error) {
 	cfg = &Config{}
 	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
 	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
-		return nil, "", "", err
+		return nil, err
 	}
-	port = cfg.App.Port
-	host = cfg.App.Host
-
-	return cfg, port, host, nil
+	return cfg, nil
 }
