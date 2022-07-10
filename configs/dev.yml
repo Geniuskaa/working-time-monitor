@@ -11,7 +11,5 @@ db:
     databaseName: test
 
 keycloak:
-  host: host
-  clientId: clientId
-  clientSecret: clientSecret
-  realm: realm
+  base-path: https://kc.scb-monitor.ru
+  realm: master
