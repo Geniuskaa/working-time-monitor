@@ -9,7 +9,7 @@ RUN go mod tidy
 COPY . ./
 RUN CGO_ENABLED=0 go build -o ./build/goapp ./cmd
 
-FROM alpine
+FROM scratch
 
 COPY --from=build /app/build/goapp /goapp
 EXPOSE 8080
