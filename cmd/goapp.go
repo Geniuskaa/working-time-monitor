@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
