@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 
 	"go.uber.org/zap"
 	"net/http"
@@ -17,10 +19,11 @@ type Server struct {
 	mux    *chi.Mux
 	db     *postgres.Db
 	serv   *http.Server
+	cfg    *config.Config
 }
 
-func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *postgres.Db) *Server {
-	return &Server{ctx: ctx, logger: logger, mux: mux, db: db}
+func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *postgres.Db, conf *config.Config) *Server {
+	return &Server{ctx: ctx, logger: logger, mux: mux, db: db, cfg: conf}
 }
 
 func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
@@ -29,6 +32,9 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 func (s *Server) Init() {
 	serv := user.NewService(s.db, s.logger)
+	authMidWare := auth.NewMiddleware(s.cfg, s.db, s.logger)
+
+	s.mux.Use(authMidWare.Middleware)
 	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 
 }

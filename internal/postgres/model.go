@@ -4,11 +4,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Skill struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-}
-
 type User struct {
 	Id          int              `json:"id"`
 	Username    string           `json:"username"`
@@ -31,4 +26,14 @@ type UserWithProjects struct {
 	Id          int    `json:"id"`
 	DisplayName string `json:"display_name"`
 	Projects    string `json:"projects"`
+}
+
+type UserPrincipal struct {
+	Id       int
+	Username string
+	Email    string
+}
+
+type Skill struct {
+	Skills string
 }

@@ -9,3 +9,7 @@ db:
     username: app
     password: pass
     databaseName: test
+
+keycloak:
+    base-path: https://kc.scb-monitor.ru
+    realm: master

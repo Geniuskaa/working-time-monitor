@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/MicahParks/keyfunc"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -19,9 +20,17 @@ type DB struct {
 	DatabaseName        string `yaml:"databaseName"`
 }
 
+type Keycloak struct {
+	BasePath  string `yaml:"base-path"`
+	Realm     string `yaml:"realm"`
+	PublicKey []byte
+	JWK       *keyfunc.JWKS
+}
+
 type Config struct {
-	App App `yaml:"app"`
-	DB  DB  `yaml:"db"`
+	App      App      `yaml:"app"`
+	DB       DB       `yaml:"db"`
+	Keycloak Keycloak `yaml:"keycloak"`
 }
 
 func NewConfig(profile string) (cfg *Config, port, host string, err error) {
