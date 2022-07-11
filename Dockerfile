@@ -11,6 +11,7 @@ RUN CGO_ENABLED=0 go build -o ./build/goapp ./cmd
 
 FROM scratch
 
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /app/configs /configs
 COPY --from=build /app/build/goapp /goapp
 EXPOSE 8080
