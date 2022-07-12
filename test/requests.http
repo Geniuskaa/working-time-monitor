@@ -1,5 +1,16 @@
-### получение списка сотрудников по id специальности
-GET localhost:9999/api/v1/users/2
-
 ### получение списка специальностей
 GET localhost:9999/api/v1/users/employees
+
+### получение списка сотрудников по id специальности
+GET localhost:9999/api/v1/users/employee/99
+
+### получение подробной информации о сотруднике
+GET localhost:9999/api/v1/users/99
+
+### получение подробной информации о сотруднике
+POST localhost:9999/api/v1/users/skills
+Content-Type: application/json
+
+{
+  "name": "MongoDB"
+}
