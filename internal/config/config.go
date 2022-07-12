@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/MicahParks/keyfunc"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -19,20 +20,25 @@ type DB struct {
 	DatabaseName        string `yaml:"databaseName"`
 }
 
-type Config struct {
-	App App `yaml:"app"`
-	DB  DB  `yaml:"db"`
+type Keycloak struct {
+	BasePath  string `yaml:"base-path"`
+	Realm     string `yaml:"realm"`
+	PublicKey []byte
+	JWK       *keyfunc.JWKS
 }
 
-func NewConfig(profile string) (cfg *Config, port, host string, err error) {
+type Config struct {
+	App      App      `yaml:"app"`
+	DB       DB       `yaml:"db"`
+	Keycloak Keycloak `yaml:"keycloak"`
+}
+
+func NewConfig(profile string) (cfg *Config, err error) {
 	cfg = &Config{}
 	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
 	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
-		return nil, "", "", err
+		return nil, err
 	}
-	port = cfg.App.Port
-	host = cfg.App.Host
-
-	return cfg, port, host, nil
+	return cfg, nil
 }

@@ -2,10 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/MicahParks/keyfunc"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
@@ -13,12 +17,12 @@ import (
 )
 
 func main() {
-	conf, port, host, err := config.NewConfig("dev")
+	conf, err := config.NewConfig("dev")
 	if err != nil {
 		panic("Error with reading config")
 	}
 
-	if err := execute(net.JoinHostPort(host, port), conf); err != nil {
+	if err := execute(net.JoinHostPort(conf.App.Host, conf.App.Port), conf); err != nil {
 		os.Exit(1)
 	}
 
@@ -29,6 +33,8 @@ func execute(addr string, conf *config.Config) (err error) {
 
 	logger := loggerInit()
 
+	keycloakInit(conf)
+
 	db := postgres.NewDb(logger, conf)
 	defer func() {
 		cancel()
@@ -36,7 +42,7 @@ func execute(addr string, conf *config.Config) (err error) {
 	}()
 
 	mux := chi.NewRouter()
-	application := server.NewServer(ctx, logger, mux, db)
+	application := server.NewServer(ctx, logger, mux, db, conf)
 	application.Init()
 
 	return application.Start(addr)
@@ -59,4 +65,17 @@ func loggerInit() *zap.SugaredLogger {
 	//sugarLogger := zap.New(core).Sugar()
 
 	return zap.NewExample().Sugar() //sugarLogger
+}
+
+func keycloakInit(conf *config.Config) {
+	url := conf.Keycloak.BasePath + fmt.Sprintf("/auth/realms/%s/protocol/openid-connect/certs", conf.Keycloak.Realm)
+	resp, err := http.Get(url)
+	defer resp.Body.Close()
+	publicKey, err := ioutil.ReadAll(resp.Body)
+	jwk, err := keyfunc.NewJSON(publicKey)
+	if err != nil {
+		panic("keycloak init error")
+	}
+	conf.Keycloak.PublicKey = publicKey
+	conf.Keycloak.JWK = jwk
 }
