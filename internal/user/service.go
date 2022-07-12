@@ -54,8 +54,8 @@ func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
 	return emplListDto, nil
 }
 
-func (s *Service) getUserByUserId(ctx context.Context, id int) (UserDTO, error) {
-	user, empl, err := s.repo.GetUserByUserId(ctx, id)
+func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
+	user, empl, err := s.repo.GetUserByUserId(ctx, userId)
 	if err != nil {
 		s.log.Error(err)
 		return UserDTO{}, err

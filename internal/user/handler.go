@@ -72,7 +72,7 @@ func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	user, err := h.service.getUserByUserId(h.ctx, id)
+	user, err := h.service.getUser(h.ctx, id)
 	if err != nil {
 		http.Error(writer, "We couldn`t find such user", http.StatusNotFound)
 		return
