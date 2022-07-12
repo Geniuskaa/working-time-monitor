@@ -32,9 +32,10 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 func (s *Server) Init() {
 	serv := user.NewService(s.db, s.logger)
-	authMidWare := auth.NewMiddleware(s.cfg, s.db, s.logger)
 
-	s.mux.Use(authMidWare.Middleware)
+	authMidWare := auth.NewMiddleware(s.cfg, s.db, s.logger)
+	s.mux.Use(authMidWare.Middleware, s.recoverer)
+	
 	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 
 }
@@ -45,4 +46,18 @@ func (s *Server) Start(addr string) error {
 	}
 
 	return s.serv.ListenAndServe()
+}
+
+func (s *Server) recoverer(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+
+		defer func() {
+			if err := recover(); err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				writer.Write([]byte("Something going wrong..."))
+				s.logger.Error("panic occurred:", err)
+			}
+		}()
+		handler.ServeHTTP(writer, request)
+	})
 }

@@ -37,3 +37,18 @@ type UserPrincipal struct {
 type Skill struct {
 	Skills string
 }
+
+type UserProfileFromExcel struct {
+	DisplayName   string   `json:"display_name"`
+	Employee      string   `json:"employee"`
+	Phone         string   `json:"phone"`
+	Email         string   `json:"email"`
+	Devices       []Device `json:"devices"`
+	MobileDevices []string `json:"mobile_devices"`
+	Skills        string   `json:"skills"`
+}
+
+type Device struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
