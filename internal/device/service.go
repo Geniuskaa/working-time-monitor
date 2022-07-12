@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination=../mocks/device_service.go -package=mocks . Service
+
 type Service interface {
 	GetMobileDevices(ctx context.Context, os string) ([]*RentingDeviceResponse, error)
 	RentDevice(ctx context.Context, deviceId int, userId int) (*RentingDeviceResponse, error)
@@ -90,7 +92,7 @@ func (s *service) ReturnDevice(ctx context.Context, deviceId int, userId int) (*
 		return nil, errors.New("the user who rented the device and who is trying to return are not the same")
 	}
 	if latestRentingDevice.UpdatedAt.Valid {
-		return nil, errors.New("")
+		return nil, errors.New("device is not rented")
 	}
 	latestRentingDevice.UpdatedAt = pgtype.Timestamp{Time: time.Now(), Valid: true}
 	err = s.repo.UpdateRentingDevice(ctx, latestRentingDevice.Id, latestRentingDevice)

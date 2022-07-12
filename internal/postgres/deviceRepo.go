@@ -6,6 +6,8 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/model"
 )
 
+//go:generate mockgen -destination=../mocks/device_repo.go -package=mocks . DeviceRepo
+
 type DeviceRepo interface {
 	GetMobileDeviceById(ctx context.Context, id int) (*model.MobileDevice, error)
 	GetMobileDevices(ctx context.Context) ([]*model.MobileDevice, error)
