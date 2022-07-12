@@ -2,12 +2,9 @@ package user
 
 import (
 	"context"
-	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
-	"mime/multipart"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
-	"strconv"
 )
 
 type Service struct {
@@ -78,54 +75,61 @@ func (s *Service) getUserByUserId(ctx context.Context, id int) (UserDTO, error) 
 	return userDto, nil
 }
 
-func (s *Service) parseXlsxToGetProfiles(file multipart.File, sheetName string) ([]UserProfileDTO, error) {
-	f, err := excelize.OpenReader(file)
-	if err != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-
-	defer func() {
-		if err := f.Close(); err != nil {
-			s.log.Error(err)
-		}
-	}()
-
-	rows, err := f.GetRows(sheetName)
-	if err != nil {
-		s.log.Error(err)
-		return nil, err
-	}
-
-	users := make([]UserProfileDTO, len(rows)-1)
-
-	for i, row := range rows {
-		if i == 0 {
-			continue
-		}
-
-		id, err := strconv.Atoi(row[0])
-		if err != nil {
-			s.log.Error(err)
-			return nil, err
-		}
-
-		j := i - 1
-		users[j].Id = id
-		users[j].DisplayName = row[1]
-		users[j].Employee = row[3]
-		users[j].Phone = row[6]
-		users[j].Email = row[7]
-		if len(row) >= 13 {
-			users[j].Devices = row[12]
-			if len(row) == 14 {
-				users[j].Skills = row[13]
-			}
-		}
-
-	}
-	return users, nil
-}
+//func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.File, sheetName string) (error) {
+//	f, err := excelize.OpenReader(file)
+//	if err != nil {
+//		s.log.Error(err)
+//		return err
+//	}
+//
+//	defer func() {
+//		if err := f.Close(); err != nil {
+//			s.log.Error(err)
+//		}
+//	}()
+//
+//	rows, err := f.GetRows(sheetName)
+//	if err != nil {
+//		s.log.Error(err)
+//		return err
+//	}
+//
+//	users := make([]UserProfileDTO, len(rows)-1)
+//
+//	for i, row := range rows {
+//		if i == 0 {
+//			continue
+//		}
+//
+//		id, err := strconv.Atoi(row[0])
+//		if err != nil {
+//			s.log.Error(err)
+//			return err
+//		}
+//
+//		j := i - 1
+//		users[j].Id = id
+//		users[j].DisplayName = row[1]
+//		users[j].Employee = row[3]
+//		users[j].Phone = row[6]
+//		users[j].Email = row[7]
+//		if len(row) >= 13 {
+//			users[j].Devices = row[12]
+//			if len(row) == 14 {
+//				users[j].Skills = row[13]
+//			}
+//		}
+//
+//	}
+//
+//	err = s.repo.PutProfilesToDB(ctx, users)
+//	if err != nil {
+//		s.log.Error(err)
+//		return err
+//	}
+//
+//	return nil
+//}
 
 func (s *Service) addSkillToUserByUserUserPrincipal(ctx context.Context, principal *auth.UserPrincipal, skills string) error {
 	err := s.repo.AddSkillsToUserProfile(ctx, principal.Username, principal.Email, skills)

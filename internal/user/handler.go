@@ -6,7 +6,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
@@ -30,7 +29,7 @@ func (h *handler) Routes() chi.Router {
 	r.Get("/employee/{empl-id}", h.GetUsersByEmployeeId)
 	r.Get("/{user-id}", h.GetUserInfoById)
 	r.Post("/skills", h.AddSkillToUser)
-	r.Post("/profile", h.GetUserProfileInfo)
+	//r.Post("/profile", h.GetUserProfileInfo)
 
 	return r
 }
@@ -157,48 +156,33 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 	return
 }
 
-func (h *handler) GetUserProfileInfo(writer http.ResponseWriter, request *http.Request) {
-
-	err := request.ParseMultipartForm(10 << 20) // Выставление максимального размера файла на прием. Сейчас 10 Мб
-	if err != nil {
-		h.log.Error(err)
-		http.Error(writer, "Error setting the file size", http.StatusInternalServerError)
-		return
-	}
-
-	file, _, err := request.FormFile("file")
-	if err != nil {
-		h.log.Error(err)
-		http.Error(writer, "Error retrieving the File", http.StatusInternalServerError)
-		return
-	}
-	defer func(file multipart.File) {
-		err := file.Close()
-		if err != nil {
-			h.log.Error(err)
-		}
-	}(file)
-
-	profiles, err := h.service.parseXlsxToGetProfiles(file, "Лист1")
-	if err != nil {
-		http.Error(writer, "Error parsing file", http.StatusInternalServerError)
-		return
-	}
-
-	body, err := json.Marshal(profiles)
-	if err != nil {
-		h.log.Error(err)
-		http.Error(writer, "Error wrapping body", http.StatusInternalServerError)
-		return
-	}
-
-	writer.Header().Add("Content-Type", "application/json")
-	_, err = writer.Write(body)
-	if err != nil {
-		h.log.Error(err)
-		http.Error(writer, "Error writing response body", http.StatusInternalServerError)
-		return
-	}
-
-	return
-}
+//func (h *handler) GetUserProfileInfo(writer http.ResponseWriter, request *http.Request) {
+//
+//	err := request.ParseMultipartForm(10 << 20) // Выставление максимального размера файла на прием. Сейчас 10 Мб
+//	if err != nil {
+//		h.log.Error(err)
+//		http.Error(writer, "Error setting the file size", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	file, _, err := request.FormFile("file")
+//	if err != nil {
+//		h.log.Error(err)
+//		http.Error(writer, "Error retrieving the File", http.StatusInternalServerError)
+//		return
+//	}
+//	defer func(file multipart.File) {
+//		err := file.Close()
+//		if err != nil {
+//			h.log.Error(err)
+//		}
+//	}(file)
+//
+//	err = h.service.parseXlsxToGetProfiles(file, "Лист1")
+//	if err != nil {
+//		http.Error(writer, "Error parsing file", http.StatusInternalServerError)
+//		return
+//	}
+//
+//	return
+//}

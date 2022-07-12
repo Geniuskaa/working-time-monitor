@@ -13,6 +13,7 @@ type UserRepo interface {
 	GetUserByUserId(ctx context.Context, id int) (User, error)
 	GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error)
 	AddSkillsToUserProfile(ctx context.Context, username string, email string, skills string) error
+	//PutProfilesToDB(ctx context.Context, users []user.UserProfileDTO) error
 }
 
 func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {
@@ -107,6 +108,10 @@ func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*
 func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email string, skills string) error {
 	tx, err := d.Db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
+		errOfRollback := tx.Rollback()
+		if errOfRollback != nil {
+			return errOfRollback
+		}
 		return err
 	}
 
@@ -115,6 +120,10 @@ func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email 
 	var oldSkills string
 	err = row.Scan(&oldSkills)
 	if err != nil {
+		errOfRollback := tx.Rollback()
+		if errOfRollback != nil {
+			return errOfRollback
+		}
 		return err
 	}
 
@@ -136,3 +145,19 @@ func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email 
 
 	return nil
 }
+
+//func (d *Db) PutProfilesToDB(ctx context.Context, users []user.UserProfileDTO) error {
+//	tx, err := d.Db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+//	if err != nil {
+//		errOfRollback := tx.Rollback()
+//		if errOfRollback != nil {
+//			return errOfRollback
+//		}
+//		return err
+//	}
+//
+//	tx.
+//
+//
+//
+//}

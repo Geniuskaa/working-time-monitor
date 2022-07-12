@@ -1,6 +1,14 @@
 version: "3.9"
 
 services:
+  sovcom_backend:
+    image: sovcom-app
+    ports:
+      - "9999:9999"
+    networks:
+      back:
+        ipv4_address: 172.16.238.3
+
   postgres:
     container_name: postgres
     image: postgres:12.3-alpine
@@ -14,13 +22,20 @@ services:
       APP_DB_USER: app
       APP_DB_PASS: pass
     networks:
-      - ompnw
+      back:
+        ipv4_address: 172.16.238.4
     volumes:
       - ./scripts/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
 
 
 
-
 networks:
-  ompnw:
+  back:
     driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+         - subnet: 172.16.238.0/24
+  default:
+     driver: bridge

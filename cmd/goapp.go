@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -50,21 +49,21 @@ func execute(addr string, conf *config.Config) (err error) {
 }
 
 func loggerInit() *zap.SugaredLogger {
-	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	//encoderConfig := zap.NewDevelopmentEncoderConfig()
+	//encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	//encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	//
+	//encore := zapcore.NewJSONEncoder(encoderConfig)
+	//file, err := os.Create("./logs/logs.txt")
+	//if err != nil {
+	//	panic("Error with creating file")
+	//}
+	//writeSyncer := zapcore.AddSync(file)
+	//core := zapcore.NewCore(encore, writeSyncer, zapcore.ErrorLevel)
+	//
+	//sugarLogger := zap.New(core).Sugar()
 
-	encore := zapcore.NewJSONEncoder(encoderConfig)
-	file, err := os.Create("./logs/logs.txt")
-	if err != nil {
-		panic("Error with creating file")
-	}
-	writeSyncer := zapcore.AddSync(file)
-	core := zapcore.NewCore(encore, writeSyncer, zapcore.ErrorLevel)
-
-	sugarLogger := zap.New(core).Sugar()
-
-	return sugarLogger
+	return zap.NewExample().Sugar() //sugarLogger
 }
 
 func keycloakInit(conf *config.Config) {
