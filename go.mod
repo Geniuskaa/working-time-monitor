@@ -17,6 +17,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
