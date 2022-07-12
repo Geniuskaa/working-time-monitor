@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 
 	"go.uber.org/zap"
 	"net/http"
@@ -17,10 +18,11 @@ type Server struct {
 	mux    *chi.Mux
 	db     *postgres.Db
 	serv   *http.Server
+	cfg    *config.Config
 }
 
-func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *postgres.Db) *Server {
-	return &Server{ctx: ctx, logger: logger, mux: mux, db: db}
+func NewServer(ctx context.Context, logger *zap.SugaredLogger, mux *chi.Mux, db *postgres.Db, cfg *config.Config) *Server {
+	return &Server{ctx: ctx, logger: logger, mux: mux, db: db, cfg: cfg}
 }
 
 func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

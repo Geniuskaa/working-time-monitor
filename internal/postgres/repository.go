@@ -8,6 +8,17 @@ type UserRepo interface {
 	GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error)
 	GetEmplList(ctx context.Context) ([]*Employee, error)
 	GetUserByUserId(ctx context.Context, id int) (User, error)
+	GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error)
+}
+
+func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error) {
+	principal := UserPrincipal{}
+	row := d.Db.QueryRowContext(ctx, "SELECT u.id, u.username, u.email FROM users u WHERE u.username = $1", username)
+	err := row.Scan(&principal.Id, &principal.Username, &principal.Email)
+	if err != nil {
+		return nil, err
+	}
+	return &principal, nil
 }
 
 func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {
@@ -70,21 +81,4 @@ func (d *Db) GetEmplList(ctx context.Context) ([]*Employee, error) {
 	}
 
 	return result, nil
-}
-
-func (d *Db) GetUserByUserId(ctx context.Context, id int) (*User, *Employee, error) {
-	user := &User{}
-	row := d.Db.QueryRowContext(ctx, `SELECT id, display_name, empl_id, email, phone, birthday, skills from users where id=$1`, id)
-	err := row.Scan(&user.Id, &user.DisplayName, &user.EmployeeId, &user.Email, &user.Phone, &user.Birthday, &user.Skills)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	empl := &Employee{}
-	err = d.Db.GetContext(ctx, empl, `SELECT * from employees where id=$1`, user.EmployeeId)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return user, empl, nil
 }

@@ -32,3 +32,9 @@ type UserWithProjects struct {
 	DisplayName string `json:"display_name"`
 	Projects    string `json:"projects"`
 }
+
+type UserPrincipal struct {
+	Id       int
+	Username string
+	Email    string
+}
