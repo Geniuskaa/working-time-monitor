@@ -1,15 +1,15 @@
 app:
-  port: 9999
+  port: 8080
   host: 0.0.0.0
 
 db:
-    migrationsSourceURL: file://migrations
-    hostname: localhost
-    port: 5900
-    username: app
-    password: pass
-    databaseName: test
+  migrationsSourceURL: file://migrations
+  hostname: localhost
+  port: 5900
+  username: app
+  password: pass
+  databaseName: test
 
 keycloak:
-    base-path: https://kc.scb-monitor.ru
-    realm: master
+  base-path: https://kc.scb-monitor.ru
+  realm: master

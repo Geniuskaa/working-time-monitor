@@ -49,6 +49,7 @@ func (s *Server) Start(addr string) error {
 		Handler: s,
 	}
 
+	s.logger.Infof("Service successfully started")
 	return s.serv.ListenAndServe()
 }
 

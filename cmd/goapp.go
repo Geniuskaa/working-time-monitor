@@ -31,7 +31,7 @@ const (
 )
 
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, err := config.NewConfig("prod")
 	if err != nil {
 		panic("Error with reading config")
 	}

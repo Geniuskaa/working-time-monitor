@@ -24,8 +24,8 @@ func NewService(repo *postgres.Db, log *zap.SugaredLogger) *Service {
 var ErrNotAllProfilesWereAdded error
 
 func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithProjectsDTO, error) {
-	tr := otel.Tracer("component-getEmployeeList")
-	_, span := tr.Start(ctx, "service-getEmployeeList")
+	tr := otel.Tracer("component-getUsersByEmployeeId")
+	_, span := tr.Start(ctx, "service-getUsersByEmployeeId")
 	//span.SetAttributes(attribute.Key("testset").String("value"))
 	defer span.End()
 
