@@ -56,7 +56,7 @@ func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
-	principal, err := auth.GetUserPrincipal(r)
+	principal, err := auth.GetUserPrincipal(r, context.Background())
 	if err != nil {
 		h.log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -90,7 +90,7 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
-	principal, err := auth.GetUserPrincipal(r)
+	principal, err := auth.GetUserPrincipal(r, context.Background())
 	if err != nil {
 		h.log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
