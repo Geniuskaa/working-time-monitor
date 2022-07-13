@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/go-chi/chi/v5"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.uber.org/zap"
 	"io/ioutil"
 	"mime/multipart"
@@ -12,6 +18,13 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"strconv"
+	"time"
+)
+
+const (
+	service     = "go-app"
+	environment = "production"
+	id          = 1
 )
 
 type handler struct {
@@ -36,7 +49,28 @@ func (h *handler) Routes() chi.Router {
 	return r
 }
 
+func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
+	if err != nil {
+		return nil, err
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String(service),
+			attribute.String("environment", environment),
+			attribute.Int64("ID", id),
+		)),
+	)
+	return tp, nil
+}
+
 func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http.Request) {
+	tr := otel.Tracer("handler-GetUsersByEmployeeId")
+	ctx, span := tr.Start(h.ctx, "handler-GetUsersByEmployeeId")
+	defer span.End()
+
 	id, err := strconv.Atoi(chi.URLParam(request, "empl-id"))
 	if err != nil {
 		h.log.Error(err)
@@ -44,7 +78,7 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 		return
 	}
 
-	users, err := h.service.getUsersByEmployeeId(h.ctx, id)
+	users, err := h.service.getUsersByEmployeeId(ctx, id)
 	if err != nil {
 		http.Error(writer, "Error when geting users", http.StatusInternalServerError)
 		return
@@ -69,6 +103,10 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 }
 
 func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Request) {
+	tr := otel.Tracer("handler-GetUserInfoById")
+	ctx, span := tr.Start(h.ctx, "handler-GetUserInfoById")
+	defer span.End()
+
 	id, err := strconv.Atoi(chi.URLParam(request, "user-id"))
 	if err != nil {
 		h.log.Error(err)
@@ -76,7 +114,7 @@ func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	user, err := h.service.getUser(h.ctx, id)
+	user, err := h.service.getUser(ctx, id)
 	if err != nil {
 		http.Error(writer, "We couldn`t find such user", http.StatusNotFound)
 		return
@@ -101,7 +139,11 @@ func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Requ
 }
 
 func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Request) {
-	emplList, err := h.service.getEmployeeList(h.ctx)
+	tr := otel.Tracer("handler-GetEmployeeList")
+	ctx, span := tr.Start(h.ctx, "handler-GetEmployeeList")
+	defer span.End()
+
+	emplList, err := h.service.getEmployeeList(ctx)
 	if err != nil {
 		http.Error(writer, "Error when geting employee list", http.StatusInternalServerError)
 		return
@@ -126,7 +168,11 @@ func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Requ
 }
 
 func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Request) {
-	userPrincipal, err := auth.GetUserPrincipal(request)
+	tr := otel.Tracer("handler-AddSkillToUser")
+	ctx, span := tr.Start(h.ctx, "handler-AddSkillToUser")
+	defer span.End()
+
+	userPrincipal, err := auth.GetUserPrincipal(request, ctx)
 	if err != nil {
 		h.log.Error(err)
 		http.Error(writer, "Error parsing jwt token", http.StatusInternalServerError)
@@ -148,7 +194,7 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	err = h.service.addSkillToUser(h.ctx, userPrincipal, reqData.Skills)
+	err = h.service.addSkillToUser(ctx, userPrincipal, reqData.Skills)
 	if err != nil {
 		http.Error(writer, "Error adding skills to user profile", http.StatusInternalServerError)
 		return
@@ -159,6 +205,9 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 }
 
 func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Request) {
+	tr := otel.Tracer("handler-AddUserProfiles")
+	ctx, span := tr.Start(h.ctx, "handler-AddUserProfiles")
+	defer span.End()
 
 	err := request.ParseMultipartForm(10 << 20) // Выставление максимального размера файла на прием. Сейчас 10 Мб
 	if err != nil {
@@ -180,7 +229,7 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 		}
 	}(file)
 
-	err = h.service.parseXlsxToGetProfiles(h.ctx, file, "Лист1")
+	err = h.service.parseXlsxToGetProfiles(ctx, file, "Лист1")
 	if err != nil {
 		if errors.Is(err, ErrNotAllProfilesWereAdded) {
 			writer.Write([]byte("Unfortunately some profiles were not added!"))
@@ -189,6 +238,8 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 		http.Error(writer, "Error parsing file", http.StatusInternalServerError)
 		return
 	}
+
+	time.Sleep(time.Second * 2)
 
 	writer.Write([]byte("Succesfully added all profiles!"))
 

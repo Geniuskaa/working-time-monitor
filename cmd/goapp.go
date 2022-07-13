@@ -31,7 +31,7 @@ const (
 )
 
 func main() {
-	conf, err := config.NewConfig("prod")
+	conf, err := config.NewConfig("dev")
 	if err != nil {
 		panic("Error with reading config")
 	}
@@ -62,9 +62,9 @@ func execute(addr string, conf *config.Config) (err error) {
 		}
 	}(ctx)
 
-	tr := tp.Tracer("component-main")
+	tr := tp.Tracer("sovcom-app")
 
-	ctx, span := tr.Start(ctx, "foo")
+	ct, span := tr.Start(ctx, "Go-app")
 	defer span.End()
 
 	keycloakInit(conf)
@@ -76,7 +76,7 @@ func execute(addr string, conf *config.Config) (err error) {
 	}()
 
 	mux := chi.NewRouter()
-	application := server.NewServer(ctx, logger, mux, db, conf)
+	application := server.NewServer(ct, logger, mux, db, conf)
 	application.Init()
 
 	return application.Start(addr)

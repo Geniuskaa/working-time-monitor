@@ -24,12 +24,11 @@ func NewService(repo postgres.UserRepo, log *zap.SugaredLogger) *Service {
 var ErrNotAllProfilesWereAdded error
 
 func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithProjectsDTO, error) {
-	tr := otel.Tracer("component-getUsersByEmployeeId")
-	_, span := tr.Start(ctx, "service-getUsersByEmployeeId")
-	//span.SetAttributes(attribute.Key("testset").String("value"))
+	tr := otel.Tracer("service-getUsersByEmployeeId")
+	ct, span := tr.Start(ctx, "service-getUsersByEmployeeId")
 	defer span.End()
 
-	users, err := s.repo.GetUsersByEmplId(ctx, id)
+	users, err := s.repo.GetUsersByEmplId(ct, id)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -49,12 +48,11 @@ func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithP
 }
 
 func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
-	tr := otel.Tracer("component-getEmployeeList")
-	_, span := tr.Start(ctx, "service-getEmployeeList")
-	//span.SetAttributes(attribute.Key("testset").String("value"))
+	tr := otel.Tracer("service-getEmployeeList")
+	ct, span := tr.Start(ctx, "service-getEmployeeList")
 	defer span.End()
 
-	emplList, err := s.repo.GetEmplList(ctx)
+	emplList, err := s.repo.GetEmplList(ct)
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
@@ -73,12 +71,11 @@ func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
 }
 
 func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
-	tr := otel.Tracer("component-getUser")
-	_, span := tr.Start(ctx, "service-getUser")
-	//span.SetAttributes(attribute.Key("testset").String("value"))
+	tr := otel.Tracer("service-getUser")
+	ct, span := tr.Start(ctx, "service-getUser")
 	defer span.End()
 
-	user, empl, err := s.repo.GetUser(ctx, userId)
+	user, empl, err := s.repo.GetUser(ct, userId)
 
 	if err != nil {
 		s.log.Error(err)
@@ -99,9 +96,8 @@ func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
 }
 
 func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.File, sheetName string) error {
-	tr := otel.Tracer("component-parseXlsxToGetProfiles")
-	_, span := tr.Start(ctx, "service-parseXlsxToGetProfiles")
-	//span.SetAttributes(attribute.Key("testset").String("value"))
+	tr := otel.Tracer("service-parseXlsxToGetProfiles")
+	ct, span := tr.Start(ctx, "service-parseXlsxToGetProfiles")
 	defer span.End()
 
 	f, err := excelize.OpenReader(file)
@@ -181,7 +177,7 @@ func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.Fil
 
 	}
 
-	countOfInserts, err := s.repo.PutProfilesToDB(ctx, users)
+	countOfInserts, err := s.repo.PutProfilesToDB(ct, users)
 	if err != nil {
 		s.log.Error(err)
 		return err
@@ -196,9 +192,8 @@ func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.Fil
 }
 
 func (s *Service) addSkillToUser(ctx context.Context, userPrincipal *auth.UserPrincipal, skills string) error {
-	tr := otel.Tracer("component-addSkillToUser")
-	_, span := tr.Start(ctx, "service-addSkillToUser")
-	//span.SetAttributes(attribute.Key("testset").String("value"))
+	tr := otel.Tracer("service-addSkillToUser")
+	ctx, span := tr.Start(ctx, "service-addSkillToUser")
 	defer span.End()
 
 	err := s.repo.AddSkillsToUserProfile(ctx, userPrincipal.Username, userPrincipal.Email, skills)
