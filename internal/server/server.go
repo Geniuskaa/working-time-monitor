@@ -32,10 +32,10 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 func (s *Server) Init() {
 
+	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	serv := user.NewService(s.db, s.logger)
 
-	authMidWare := auth.NewMiddleware(s.cfg, s.db, s.logger)
-	s.mux.Use(authMidWare.Middleware, s.recoverer)
+	s.mux.Use(authMiddleware.Middleware, s.recoverer)
 
 	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 	s.mux.Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
