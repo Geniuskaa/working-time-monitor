@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5/pgtype"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/model"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
@@ -28,6 +29,9 @@ func NewService(log *zap.SugaredLogger, repository postgres.DeviceRepo) Service 
 }
 
 func (s *service) GetMobileDevices(ctx context.Context, os string) ([]*RentingDeviceResponse, error) {
+	tr := otel.Tracer("getMobileDevices")
+	ctx, span := tr.Start(ctx, "service-GetMobileDevices")
+	defer span.End()
 	var devices []*model.MobileDevice
 	var err error
 	if os == "" {
@@ -53,6 +57,9 @@ func (s *service) GetMobileDevices(ctx context.Context, os string) ([]*RentingDe
 }
 
 func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*RentingDeviceResponse, error) {
+	tr := otel.Tracer("RentDevice")
+	ctx, span := tr.Start(ctx, "service-RentDevice")
+	defer span.End()
 	owner := s.getRentingDeviceOwnerDisplayName(ctx, deviceId)
 	if owner != "" {
 		return nil, errors.New("mobile device already rented")
@@ -83,6 +90,9 @@ func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*Re
 }
 
 func (s *service) ReturnDevice(ctx context.Context, deviceId int, userId int) (*RentingDeviceResponse, error) {
+	tr := otel.Tracer("ReturnDevice")
+	ctx, span := tr.Start(ctx, "service-ReturnDevice")
+	defer span.End()
 	latestRentingDevice, err := s.repo.GetLatestRentingDeviceByDeviceId(ctx, deviceId)
 	if err != nil {
 		return nil, err

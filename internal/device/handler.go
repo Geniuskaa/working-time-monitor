@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"net/http"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
@@ -33,8 +34,11 @@ func (h *handler) Routes() chi.Router {
 }
 
 func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
+	tr := otel.Tracer("GetMobileDevices")
+	ctx, span := tr.Start(r.Context(), "handler-GetMobileDevices")
+	defer span.End()
 	os := r.URL.Query().Get("os")
-	devices, err := h.service.GetMobileDevices(context.Background(), os)
+	devices, err := h.service.GetMobileDevices(ctx, os)
 	if err != nil {
 		h.log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -56,6 +60,9 @@ func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
+	tr := otel.Tracer("RentDevice")
+	ctx, span := tr.Start(r.Context(), "handler-RentDevice")
+	defer span.End()
 	principal, err := auth.GetUserPrincipal(r)
 	if err != nil {
 		h.log.Error(err)
@@ -68,7 +75,7 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	d, err := h.service.RentDevice(context.Background(), deviceId, principal.Id)
+	d, err := h.service.RentDevice(ctx, deviceId, principal.Id)
 	if err != nil {
 		h.log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -90,6 +97,9 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
+	tr := otel.Tracer("ReturnDevice")
+	ctx, span := tr.Start(r.Context(), "handler-ReturnDevice")
+	defer span.End()
 	principal, err := auth.GetUserPrincipal(r)
 	if err != nil {
 		h.log.Error(err)
@@ -102,7 +112,7 @@ func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	d, err := h.service.ReturnDevice(context.Background(), deviceId, principal.Id)
+	d, err := h.service.ReturnDevice(ctx, deviceId, principal.Id)
 	if err != nil {
 		h.log.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
