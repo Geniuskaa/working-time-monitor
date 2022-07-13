@@ -13,7 +13,7 @@ type UserRepo interface {
 
 func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error) {
 	principal := UserPrincipal{}
-	row := d.Db.QueryRowContext(ctx, "SELECT u.id, u.username, u.email FROM users u WHERE u.username = $1", username)
+	row := d.Db.QueryRowContext(ctx, `SELECT u.id, u.username, u.email FROM users u WHERE u.username = $1`, username)
 	err := row.Scan(&principal.Id, &principal.Username, &principal.Email)
 	if err != nil {
 		return nil, err

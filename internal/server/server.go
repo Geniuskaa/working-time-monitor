@@ -6,6 +6,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/device"
 
 	"go.uber.org/zap"
 	"net/http"
@@ -31,10 +32,13 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) Init() {
+	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
+	s.mux.Use(authMiddleware.Middleware)
 	serv := user.NewService(s.db, s.logger)
 	authMiddware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	s.mux.Use(authMiddware.Middleware)
 	s.mux.Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
+	s.mux.Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
 
 }
 func (s *Server) Start(addr string) error {
