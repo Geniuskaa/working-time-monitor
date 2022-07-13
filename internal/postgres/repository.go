@@ -8,10 +8,12 @@ import (
 	"strings"
 )
 
+//go:generate mockgen -destination=../mocks/user_repo.go -package=mocks . UserRepo
+
 type UserRepo interface {
 	GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error)
 	GetEmplList(ctx context.Context) ([]*Employee, error)
-	GetUserByUserId(ctx context.Context, id int) (User, error)
+	GetUser(ctx context.Context, userId int) (*User, *Employee, error)
 	GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error)
 	AddSkillsToUserProfile(ctx context.Context, username string, email string, skills string) error
 	PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) (int, error)
@@ -89,9 +91,10 @@ func (d *Db) GetEmplList(ctx context.Context) ([]*Employee, error) {
 	return result, nil
 }
 
-func (d *Db) GetUserByUserId(ctx context.Context, id int) (*User, *Employee, error) {
+func (d *Db) GetUser(ctx context.Context, userId int) (*User, *Employee, error) {
 	user := &User{}
-	row := d.Db.QueryRowContext(ctx, `SELECT id, display_name, empl_id, email, phone, birthday, skills from users where id=$1`, id)
+	row := d.Db.QueryRowContext(ctx, `SELECT id, display_name, empl_id, email, phone, birthday, skills from users 
+                                                                 where id=$1`, userId)
 	err := row.Scan(&user.Id, &user.DisplayName, &user.EmployeeId, &user.Email, &user.Phone, &user.Birthday, &user.Skills)
 	if err != nil {
 		return nil, nil, err

@@ -13,11 +13,11 @@ import (
 )
 
 type Service struct {
-	repo *postgres.Db
+	repo postgres.UserRepo
 	log  *zap.SugaredLogger
 }
 
-func NewService(repo *postgres.Db, log *zap.SugaredLogger) *Service {
+func NewService(repo postgres.UserRepo, log *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, log: log}
 }
 
@@ -73,13 +73,13 @@ func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
 }
 
 func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
-
 	tr := otel.Tracer("component-getUser")
 	_, span := tr.Start(ctx, "service-getUser")
 	//span.SetAttributes(attribute.Key("testset").String("value"))
 	defer span.End()
 
-	user, empl, err := s.repo.GetUserByUserId(ctx, userId)
+	user, empl, err := s.repo.GetUser(ctx, userId)
+
 	if err != nil {
 		s.log.Error(err)
 		return UserDTO{}, err
