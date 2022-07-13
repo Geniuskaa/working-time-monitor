@@ -12,11 +12,11 @@ import (
 )
 
 type Service struct {
-	repo *postgres.Db
+	repo postgres.UserRepo
 	log  *zap.SugaredLogger
 }
 
-func NewService(repo *postgres.Db, log *zap.SugaredLogger) *Service {
+func NewService(repo postgres.UserRepo, log *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, log: log}
 }
 
@@ -61,8 +61,8 @@ func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
 	return emplListDto, nil
 }
 
-func (s *Service) getUserByUserId(ctx context.Context, id int) (UserDTO, error) {
-	user, empl, err := s.repo.GetUserByUserId(ctx, id)
+func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
+	user, empl, err := s.repo.GetUser(ctx, userId)
 	if err != nil {
 		s.log.Error(err)
 		return UserDTO{}, err
@@ -173,8 +173,8 @@ func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.Fil
 	return nil
 }
 
-func (s *Service) addSkillToUserByUserUserPrincipal(ctx context.Context, principal *auth.UserPrincipal, skills string) error {
-	err := s.repo.AddSkillsToUserProfile(ctx, principal.Username, principal.Email, skills)
+func (s *Service) addSkillToUser(ctx context.Context, userPrincipal *auth.UserPrincipal, skills string) error {
+	err := s.repo.AddSkillsToUserProfile(ctx, userPrincipal.Username, userPrincipal.Email, skills)
 	if err != nil {
 		s.log.Error(err)
 		return err
