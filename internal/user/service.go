@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/xuri/excelize/v2"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"mime/multipart"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
@@ -23,6 +24,11 @@ func NewService(repo *postgres.Db, log *zap.SugaredLogger) *Service {
 var ErrNotAllProfilesWereAdded error
 
 func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithProjectsDTO, error) {
+	tr := otel.Tracer("component-getEmployeeList")
+	_, span := tr.Start(ctx, "service-getEmployeeList")
+	//span.SetAttributes(attribute.Key("testset").String("value"))
+	defer span.End()
+
 	users, err := s.repo.GetUsersByEmplId(ctx, id)
 	if err != nil {
 		s.log.Error(err)
@@ -43,6 +49,11 @@ func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithP
 }
 
 func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
+	tr := otel.Tracer("component-getEmployeeList")
+	_, span := tr.Start(ctx, "service-getEmployeeList")
+	//span.SetAttributes(attribute.Key("testset").String("value"))
+	defer span.End()
+
 	emplList, err := s.repo.GetEmplList(ctx)
 	if err != nil {
 		s.log.Error(err)
@@ -61,8 +72,13 @@ func (s *Service) getEmployeeList(ctx context.Context) ([]EmpolyeeDTO, error) {
 	return emplListDto, nil
 }
 
-func (s *Service) getUserByUserId(ctx context.Context, id int) (UserDTO, error) {
-	user, empl, err := s.repo.GetUserByUserId(ctx, id)
+func (s *Service) getUser(ctx context.Context, userId int) (UserDTO, error) {
+	tr := otel.Tracer("component-getUser")
+	_, span := tr.Start(ctx, "service-getUser")
+	//span.SetAttributes(attribute.Key("testset").String("value"))
+	defer span.End()
+
+	user, empl, err := s.repo.GetUserByUserId(ctx, userId)
 	if err != nil {
 		s.log.Error(err)
 		return UserDTO{}, err
@@ -82,6 +98,11 @@ func (s *Service) getUserByUserId(ctx context.Context, id int) (UserDTO, error) 
 }
 
 func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.File, sheetName string) error {
+	tr := otel.Tracer("component-parseXlsxToGetProfiles")
+	_, span := tr.Start(ctx, "service-parseXlsxToGetProfiles")
+	//span.SetAttributes(attribute.Key("testset").String("value"))
+	defer span.End()
+
 	f, err := excelize.OpenReader(file)
 	if err != nil {
 		s.log.Error(err)
@@ -173,8 +194,13 @@ func (s *Service) parseXlsxToGetProfiles(ctx context.Context, file multipart.Fil
 	return nil
 }
 
-func (s *Service) addSkillToUserByUserUserPrincipal(ctx context.Context, principal *auth.UserPrincipal, skills string) error {
-	err := s.repo.AddSkillsToUserProfile(ctx, principal.Username, principal.Email, skills)
+func (s *Service) addSkillToUser(ctx context.Context, userPrincipal *auth.UserPrincipal, skills string) error {
+	tr := otel.Tracer("component-addSkillToUser")
+	_, span := tr.Start(ctx, "service-addSkillToUser")
+	//span.SetAttributes(attribute.Key("testset").String("value"))
+	defer span.End()
+
+	err := s.repo.AddSkillsToUserProfile(ctx, userPrincipal.Username, userPrincipal.Email, skills)
 	if err != nil {
 		s.log.Error(err)
 		return err
