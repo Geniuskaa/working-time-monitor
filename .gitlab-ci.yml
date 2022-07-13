@@ -1,102 +1,25 @@
 image: golang:latest
 
-variables:
-  PROJECT_NAME: "task"
-
 stages:
   - test
   - build
-  - deploy
-
-lint:
-  image: golangci/golangci-lint:v1.26.0
-  stage: test
-  script:
-    - make dep
-    - make lint
-  only:
-    - merge_requests
 
 unit tests:
   stage: test
   script:
-    - make dep
-    - make test
+    - go get -t -d ./...
+    - go test ./...
   only:
+    - dev
+    - pushes
     - merge_requests
 
 try to build:
-  stage: test
+  stage: build
   script:
-    - make dep
-    - make build
+    - go get -t -d ./...
+    - go build -v ./...
   only:
+    - dev
+    - pushes
     - merge_requests
-
-build to test:
-  stage: build
-  image: docker
-  before_script:
-    - export VERSION=$CI_COMMIT_SHORT_SHA
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
-    - docker tag $CI_REGISTRY_IMAGE:$VERSION $CI_REGISTRY_IMAGE:latest
-    - docker push $CI_REGISTRY_IMAGE
-  after_script:
-    - docker logout $CI_REGISTRY
-  only:
-    - test
-
-build to prod:
-  stage: build
-  image: docker
-  before_script:
-    - export VERSION=$CI_COMMIT_SHORT_SHA
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
-    - docker tag $CI_REGISTRY_IMAGE:$VERSION $CI_REGISTRY_IMAGE:prod
-    - docker push $CI_REGISTRY_IMAGE
-  after_script:
-    - docker logout $CI_REGISTRY
-  only:
-    - main
-
-deploy to test:
-  stage: deploy
-  tags:
-    - urdc-drr-landing-test1
-  environment:
-    name: test
-  variables:
-    ENV_FILE: configs/test.env
-    CONTAINER_NAME: $PROJECT_NAME-test
-    PORT: 7004
-  before_script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:latest
-    - make docker-rerun
-  after_script:
-    - docker logout $CI_REGISTRY
-  when: manual
-
-deploy to prod:
-  stage: deploy
-  tags:
-    - uhq-drr-landing1
-  environment:
-    name: prod
-  variables:
-    ENV_FILE: configs/prod.env
-    CONTAINER_NAME: $PROJECT_NAME-prod
-    PORT: 7004
-  before_script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:prod
-    - make docker-rerun
-  after_script:
-    - docker logout $CI_REGISTRY
-  when: manual
