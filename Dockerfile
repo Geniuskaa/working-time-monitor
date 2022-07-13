@@ -16,3 +16,4 @@ COPY --from=build /app/configs /configs
 COPY --from=build /app/build/goapp /goapp
 EXPOSE 8080
 CMD ["./goapp"]
+

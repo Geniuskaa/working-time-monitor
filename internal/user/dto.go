@@ -22,3 +22,13 @@ type UserDTO struct {
 	Birthday    pgtype.Date `json:"birthday"`
 	Skills      string      `json:"skills"`
 }
+
+type UserProfileDTO struct {
+	Id          int    `json:"id"`
+	DisplayName string `json:"display_name"`
+	Employee    string `json:"employee"`
+	Phone       string `json:"phone"`
+	Email       string `json:"email"`
+	Devices     string `json:"devices"`
+	Skills      string `json:"skills"`
+}
