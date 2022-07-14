@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"go.opentelemetry.io/otel"
 	"strings"
 )
 
@@ -30,8 +31,11 @@ func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*
 }
 
 func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects, error) {
+	tr := otel.Tracer("repo-GetUsersByEmplId")
+	ct, span := tr.Start(ctx, "repo-GetUsersByEmplId")
+	defer span.End()
 
-	rows, err := d.Db.QueryContext(ctx, `SELECT users.id,
+	rows, err := d.Db.QueryContext(ct, `SELECT users.id,
        users.display_name,
        array_to_string(array_agg(pr.name), ', ')
 from users
@@ -67,7 +71,11 @@ limit 100;`, id)
 }
 
 func (d *Db) GetEmplList(ctx context.Context) ([]*Employee, error) {
-	rows, err := d.Db.QueryContext(ctx, `SELECT * FROM employees limit 50`)
+	tr := otel.Tracer("repo-GetEmplList")
+	ct, span := tr.Start(ctx, "repo-GetEmplList")
+	defer span.End()
+
+	rows, err := d.Db.QueryContext(ct, `SELECT * FROM employees limit 50`)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +100,12 @@ func (d *Db) GetEmplList(ctx context.Context) ([]*Employee, error) {
 }
 
 func (d *Db) GetUser(ctx context.Context, userId int) (*User, *Employee, error) {
+	tr := otel.Tracer("repo-GetUser")
+	ct, span := tr.Start(ctx, "repo-GetUser")
+	defer span.End()
+
 	user := &User{}
-	row := d.Db.QueryRowContext(ctx, `SELECT id, display_name, empl_id, email, phone, birthday, skills from users 
+	row := d.Db.QueryRowContext(ct, `SELECT id, display_name, empl_id, email, phone, birthday, skills from users 
                                                                  where id=$1`, userId)
 	err := row.Scan(&user.Id, &user.DisplayName, &user.EmployeeId, &user.Email, &user.Phone, &user.Birthday, &user.Skills)
 	if err != nil {
@@ -101,7 +113,7 @@ func (d *Db) GetUser(ctx context.Context, userId int) (*User, *Employee, error) 
 	}
 
 	empl := &Employee{}
-	err = d.Db.GetContext(ctx, empl, `SELECT * from employees where id=$1`, user.EmployeeId)
+	err = d.Db.GetContext(ct, empl, `SELECT * from employees where id=$1`, user.EmployeeId)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -110,7 +122,11 @@ func (d *Db) GetUser(ctx context.Context, userId int) (*User, *Employee, error) 
 }
 
 func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email string, skills string) error {
-	tx, err := d.Db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tr := otel.Tracer("repo-AddSkillsToUserProfile")
+	ct, span := tr.Start(ctx, "repo-AddSkillsToUserProfile")
+	defer span.End()
+
+	tx, err := d.Db.BeginTx(ct, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		errOfRollback := tx.Rollback()
 		if errOfRollback != nil {
@@ -151,10 +167,14 @@ func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email 
 }
 
 func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) (int, error) {
+	tr := otel.Tracer("repo-PutProfilesToDB")
+	ct, span := tr.Start(ctx, "repo-PutProfilesToDB")
+	defer span.End()
+
 	countOfSuccesfulTransactions := 0
 
 	for _, user := range users {
-		tx, err := d.Db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+		tx, err := d.Db.BeginTx(ct, &sql.TxOptions{Isolation: sql.LevelSerializable})
 		if err != nil {
 			errOfRollback := tx.Rollback()
 			if errOfRollback != nil {

@@ -18,7 +18,6 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"strconv"
-	"time"
 )
 
 const (
@@ -238,8 +237,6 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 		http.Error(writer, "Error parsing file", http.StatusInternalServerError)
 		return
 	}
-
-	time.Sleep(time.Second * 2)
 
 	writer.Write([]byte("Succesfully added all profiles!"))
 
