@@ -68,6 +68,7 @@ func execute(addr string, conf *config.Config) (err error) {
 	ct, span := tr.Start(ctx, "Go-app")
 	defer span.End()
 
+	fmt.Println(conf)
 	keycloakInit(conf)
 
 	db := postgres.NewDb(logger, conf)
@@ -112,6 +113,9 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 func keycloakInit(conf *config.Config) {
 	url := conf.Keycloak.BasePath + fmt.Sprintf("/auth/realms/%s/protocol/openid-connect/certs", conf.Keycloak.Realm)
 	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+	}
 	defer resp.Body.Close()
 	publicKey, err := ioutil.ReadAll(resp.Body)
 	jwk, err := keyfunc.NewJSON(publicKey)
