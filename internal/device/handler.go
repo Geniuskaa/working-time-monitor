@@ -34,6 +34,9 @@ func (h *handler) Routes() chi.Router {
 }
 
 func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
+	h.log.Info("test")
+	h.log.Debug("test")
+
 	tr := otel.Tracer("GetMobileDevices")
 	ctx, span := tr.Start(r.Context(), "handler-GetMobileDevices")
 	defer span.End()

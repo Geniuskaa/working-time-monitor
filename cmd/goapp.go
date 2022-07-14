@@ -12,6 +12,7 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 
 	"github.com/go-chi/chi/v5"
@@ -45,7 +46,7 @@ func main() {
 func execute(addr string, conf *config.Config) (err error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	logger := loggerInit()
+	logger, atom := loggerInit()
 
 	tp, err := tracerProvider("http://localhost:14268/api/traces")
 	if err != nil {
@@ -73,31 +74,39 @@ func execute(addr string, conf *config.Config) (err error) {
 	defer func() {
 		cancel()
 		db.Close()
+		logger.Sync()
 	}()
 
 	mux := chi.NewRouter()
 	application := server.NewServer(ct, logger, mux, db, conf)
-	application.Init()
+	application.Init(atom)
 
 	return application.Start(addr)
 }
 
-func loggerInit() *zap.SugaredLogger {
-	//encoderConfig := zap.NewDevelopmentEncoderConfig()
-	//encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	//encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
-	//
-	//encore := zapcore.NewJSONEncoder(encoderConfig)
-	//file, err := os.Create("./logs/logs.txt")
-	//if err != nil {
-	//	panic("Error with creating file")
-	//}
-	//writeSyncer := zapcore.AddSync(file)
-	//core := zapcore.NewCore(encore, writeSyncer, zapcore.ErrorLevel)
-	//
-	//sugarLogger := zap.New(core).Sugar()
+func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	return zap.NewExample().Sugar() //sugarLogger
+	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
+
+	file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+	if err != nil {
+		panic("Error with creating or opening file")
+	}
+
+	writeSyncer := zapcore.AddSync(file)
+	atom := zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	core := zapcore.NewTee(
+		zapcore.NewCore(fileEncoder, writeSyncer, atom),
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), atom),
+	)
+
+	sugarLogger := zap.New(core).Sugar()
+
+	return sugarLogger, atom
 }
 
 func keycloakInit(conf *config.Config) {
