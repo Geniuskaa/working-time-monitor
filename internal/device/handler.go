@@ -34,11 +34,8 @@ func (h *handler) Routes() chi.Router {
 }
 
 func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
-	h.log.Info("test")
-	h.log.Debug("test")
-
 	tr := otel.Tracer("GetMobileDevices")
-	ctx, span := tr.Start(r.Context(), "handler-GetMobileDevices")
+	ctx, span := tr.Start(h.ctx, "handler-GetMobileDevices")
 	defer span.End()
 	os := r.URL.Query().Get("os")
 	devices, err := h.service.GetMobileDevices(ctx, os)
@@ -64,7 +61,7 @@ func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 	tr := otel.Tracer("RentDevice")
-	ctx, span := tr.Start(r.Context(), "handler-RentDevice")
+	ctx, span := tr.Start(h.ctx, "handler-RentDevice")
 	defer span.End()
 
 	principal, err := auth.GetUserPrincipal(r, ctx)
@@ -102,7 +99,7 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
 	tr := otel.Tracer("ReturnDevice")
-	ctx, span := tr.Start(r.Context(), "handler-ReturnDevice")
+	ctx, span := tr.Start(h.ctx, "handler-ReturnDevice")
 	defer span.End()
 
 	principal, err := auth.GetUserPrincipal(r, ctx)
