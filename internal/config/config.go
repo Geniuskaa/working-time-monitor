@@ -35,9 +35,11 @@ type Config struct {
 
 func NewConfig(profile string) (cfg *Config, err error) {
 	cfg = &Config{}
-	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
+	cfgPath := fmt.Sprintf("/configs/%s.yml", profile)
 	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
+		description, err := cleanenv.GetDescription(cfg, nil)
+		fmt.Println(description)
 		return nil, err
 	}
 	return cfg, nil
