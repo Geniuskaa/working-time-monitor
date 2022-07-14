@@ -1,46 +1,46 @@
 package config
 
 import (
+	"fmt"
 	"github.com/MicahParks/keyfunc"
-	"github.com/jessevdk/go-flags"
-	"os"
+	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type App struct {
-	Port string `env:"PORT" default:"7001"`
-	Host string `env:"HOST" default:"0.0.0.0"`
+	Port string `yaml:"port"`
+	Host string `yaml:"host"`
 }
 
 type DB struct {
 	MigrationsSourceURL string
-	Hostname            string `env:"HOST"`
-	Port                int    `env:"PORT"`
-	Username            string `env:"USER"`
-	Password            string `env:"PASSWORD"`
-	DatabaseName        string `env:"DATABASE"`
+	Hostname            string `yaml:"hostname" env:"PG_HOST"`
+	Port                int    `yaml:"port" env:"PG_PORT"`
+	Username            string `yaml:"username" env:"PG_USER"`
+	Password            string `yaml:"password" env:"PG_PASSWORD"`
+	DatabaseName        string `yaml:"databaseName" env:"PG_DATABASE"`
 }
 
 type Keycloak struct {
-	BasePath  string `env:"HOST"`
-	Realm     string `env:"REALM"`
+	BasePath  string `yaml:"base-path" env:"KEYCLOAK_HOST"`
+	Realm     string `yaml:"realm" env:"KEYCLOAK_REALM"`
 	PublicKey []byte
 	JWK       *keyfunc.JWKS
 }
 
 type Config struct {
-	App      App      `env-namespace:"APP"`
-	DB       DB       `env-namespace:"PG"`
-	Keycloak Keycloak `env-namespace:"KEYCLOAK"`
+	App      App      `yaml:"app"`
+	DB       DB       `yaml:"db"`
+	Keycloak Keycloak `yaml:"keycloak"`
 }
 
-func Parse() (*Config, error) {
-	var config Config
-	p := flags.NewParser(&config, flags.HelpFlag|flags.PassDoubleDash)
-
-	_, err := p.ParseArgs(os.Args)
+func NewConfig(profile string) (cfg *Config, err error) {
+	cfg = &Config{}
+	cfgPath := fmt.Sprintf("/configs/%s.yml", profile)
+	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
+		description, err := cleanenv.GetDescription(cfg, nil)
+		fmt.Println(description)
 		return nil, err
 	}
-
-	return &config, nil
+	return cfg, nil
 }

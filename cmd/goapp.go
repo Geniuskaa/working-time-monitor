@@ -32,7 +32,7 @@ const (
 )
 
 func main() {
-	conf, err := config.Parse()
+	conf, err := config.NewConfig("prod")
 	if err != nil {
 		panic("Error with reading config")
 	}
@@ -68,7 +68,6 @@ func execute(addr string, conf *config.Config) (err error) {
 	ct, span := tr.Start(ctx, "Go-app")
 	defer span.End()
 
-	fmt.Println(conf)
 	keycloakInit(conf)
 
 	db := postgres.NewDb(logger, conf)
@@ -90,18 +89,18 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	//fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	/*fileEncoder := zapcore.NewJSONEncoder(encoderConfig)*/
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	//file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
-	//if err != nil {
-	//	panic("Error with creating or opening file")
-	//}
+	/*file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+	if err != nil {
+		panic("Error with creating or opening file")
+	}*/
 
-	//writeSyncer := zapcore.AddSync(file)
+	// writeSyncer := zapcore.AddSync(file)
 	atom := zap.NewAtomicLevelAt(zapcore.InfoLevel)
 	core := zapcore.NewTee(
-		//zapcore.NewCore(fileEncoder, writeSyncer, atom),
+		// zapcore.NewCore(fileEncoder, writeSyncer, atom),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), atom),
 	)
 
@@ -113,9 +112,6 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 func keycloakInit(conf *config.Config) {
 	url := conf.Keycloak.BasePath + fmt.Sprintf("/auth/realms/%s/protocol/openid-connect/certs", conf.Keycloak.Realm)
 	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-	}
 	defer resp.Body.Close()
 	publicKey, err := ioutil.ReadAll(resp.Body)
 	jwk, err := keyfunc.NewJSON(publicKey)
