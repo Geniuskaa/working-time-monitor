@@ -34,8 +34,8 @@ func TestService_getUsersByEmployeeId(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockUserRepo(ctrl)
-	mockRepo.EXPECT().GetUsersByEmplId(context.Background(), 1).Return(userWithProjects, nil).AnyTimes()
-	mockRepo.EXPECT().GetUsersByEmplId(context.Background(), 1000).Return([]*postgres.UserWithProjects{}, nil).AnyTimes()
+	mockRepo.EXPECT().GetUsersByEmplId(gomock.Any(), 1).Return(userWithProjects, nil).AnyTimes()
+	mockRepo.EXPECT().GetUsersByEmplId(gomock.Any(), 1000).Return([]*postgres.UserWithProjects{}, nil).AnyTimes()
 
 	s := &Service{
 		repo: mockRepo,
@@ -140,7 +140,7 @@ func TestService_getUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockUserRepo(ctrl)
-	mockRepo.EXPECT().GetUser(context.Background(), 1).Return(&postgres.User{
+	mockRepo.EXPECT().GetUser(gomock.Any(), 1).Return(&postgres.User{
 		Id:          1,
 		Username:    "egorchik",
 		DisplayName: "Fazluev Egor Olegovich",
@@ -152,7 +152,7 @@ func TestService_getUser(t *testing.T) {
 		Id:   4,
 		Name: "Data engineer",
 	}, nil).AnyTimes()
-	mockRepo.EXPECT().GetUser(context.Background(), 1000).Return(nil, nil, sql.ErrNoRows).AnyTimes()
+	mockRepo.EXPECT().GetUser(gomock.Any(), 1000).Return(nil, nil, sql.ErrNoRows).AnyTimes()
 
 	s := &Service{
 		repo: mockRepo,
@@ -214,7 +214,7 @@ func TestService_addSkillToUserByUserUserPrincipal(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockUserRepo(ctrl)
-	mockRepo.EXPECT().AddSkillsToUserProfile(context.Background(), "testUser", "testik@mail.ru", "Java, Redis").Return(nil).AnyTimes()
+	mockRepo.EXPECT().AddSkillsToUserProfile(gomock.Any(), "testUser", "testik@mail.ru", "Java, Redis").Return(nil).AnyTimes()
 
 	s := &Service{
 		repo: mockRepo,
