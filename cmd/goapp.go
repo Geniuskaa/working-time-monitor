@@ -32,7 +32,7 @@ const (
 )
 
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, err := config.Parse()
 	if err != nil {
 		panic("Error with reading config")
 	}
