@@ -40,6 +40,7 @@ func (s *Server) Init(atom zap.AtomicLevel) {
 
 	s.mux.HandleFunc("/logger", atom.ServeHTTP)
 	s.mux.Mount("/debug", s.profiler())
+
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
 

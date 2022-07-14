@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/MicahParks/keyfunc"
+	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -14,8 +15,6 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"
-
-	"github.com/go-chi/chi/v5"
 	"net"
 	"net/http"
 	"os"
@@ -30,6 +29,8 @@ const (
 	environment = "production"
 	id          = 1
 )
+
+//var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
 	conf, err := config.NewConfig("dev")
