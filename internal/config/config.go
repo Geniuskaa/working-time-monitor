@@ -13,16 +13,16 @@ type App struct {
 
 type DB struct {
 	MigrationsSourceURL string `yaml:"migrationsSourceURL"`
-	Hostname            string `yaml:"hostname"`
-	Port                int    `yaml:"port"`
-	Username            string `yaml:"username"`
-	Password            string `yaml:"password"`
-	DatabaseName        string `yaml:"databaseName"`
+	Hostname            string `yaml:"hostname" env:"PG_HOST"`
+	Port                int    `yaml:"port" env:"PG_PORT"`
+	Username            string `yaml:"username" env:"PG_USER"`
+	Password            string `yaml:"password" env:"PG_PASSWORD"`
+	DatabaseName        string `yaml:"databaseName" env:"PG_DATABASE"`
 }
 
 type Keycloak struct {
-	BasePath  string `yaml:"base-path"`
-	Realm     string `yaml:"realm"`
+	BasePath  string `yaml:"base-path" env:"KEYCLOAK_HOST"`
+	Realm     string `yaml:"realm" env:"KEYCLOAK_REALM"`
 	PublicKey []byte
 	JWK       *keyfunc.JWKS
 }

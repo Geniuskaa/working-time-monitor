@@ -4,11 +4,11 @@ app:
 
 db:
   migrationsSourceURL: file://migrations
-  hostname: localhost
-  port: 5900
-  username: app
-  password: pass
-  databaseName: test
+  hostname: scb-monitor.ru
+  port: 5432
+  username: scb_monitor
+  password: fjdsj234mrktio4
+  databaseName: scb_monitor
 
 keycloak:
   base-path: https://kc.scb-monitor.ru
