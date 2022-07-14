@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -11,7 +12,7 @@ type App struct {
 }
 
 type DB struct {
-	MigrationsSourceURL string `yaml:"migrationsSourceURL"`
+	MigrationsSourceURL string
 	Hostname            string `yaml:"hostname" env:"PG_HOST"`
 	Port                int    `yaml:"port" env:"PG_PORT"`
 	Username            string `yaml:"username" env:"PG_USER"`
@@ -34,9 +35,8 @@ type Config struct {
 
 func NewConfig(profile string) (cfg *Config, err error) {
 	cfg = &Config{}
-	//cfgPath := fmt.Sprintf("configs/%s.yml", profile)
-	err = cleanenv.ReadEnv(cfg)
-	//err = cleanenv.ReadConfig(cfgPath, cfg)
+	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
+	err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
 		return nil, err
 	}
