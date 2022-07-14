@@ -2,10 +2,11 @@ package device
 
 import (
 	"context"
-	"errors"
 	"github.com/jackc/pgx/v5/pgtype"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
+	"net/http"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/apperror"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/model"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"time"
@@ -27,6 +28,12 @@ type service struct {
 func NewService(log *zap.SugaredLogger, repository postgres.DeviceRepo) Service {
 	return &service{repo: repository, log: log}
 }
+
+var (
+	errDeviceAlreadyRented      = apperror.NewAppError(nil, "Device already rented", http.StatusBadRequest)
+	errDeviceIsNotRented        = apperror.NewAppError(nil, "Device is not rented", http.StatusBadRequest)
+	errDeviceRenterIsNotTheSame = apperror.NewAppError(nil, "The user who rented the device and who is trying to return are not the same", http.StatusBadRequest)
+)
 
 func (s *service) GetMobileDevices(ctx context.Context, os string) ([]*RentingDeviceResponse, error) {
 	tr := otel.Tracer("getMobileDevices")
@@ -62,7 +69,7 @@ func (s *service) RentDevice(ctx context.Context, deviceId int, userId int) (*Re
 	defer span.End()
 	owner := s.getRentingDeviceOwnerDisplayName(ctx, deviceId)
 	if owner != "" {
-		return nil, errors.New("mobile device already rented")
+		return nil, errDeviceAlreadyRented
 	}
 	d := model.RentingDevice{
 		User:         model.RentingDeviceUser{Id: userId},
@@ -99,10 +106,10 @@ func (s *service) ReturnDevice(ctx context.Context, deviceId int, userId int) (*
 	}
 
 	if latestRentingDevice.User.Id != userId {
-		return nil, errors.New("the user who rented the device and who is trying to return are not the same")
+		return nil, errDeviceRenterIsNotTheSame
 	}
 	if latestRentingDevice.UpdatedAt.Valid {
-		return nil, errors.New("device is not rented")
+		return nil, errDeviceIsNotRented
 	}
 	latestRentingDevice.UpdatedAt = pgtype.Timestamp{Time: time.Now(), Valid: true}
 	err = s.repo.UpdateRentingDevice(ctx, latestRentingDevice.Id, latestRentingDevice)
