@@ -117,7 +117,7 @@ func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) {
 	d, err := h.service.ReturnDevice(ctx, deviceId, principal.Id)
 	if err != nil {
 		h.log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	body, err := json.Marshal(d)
