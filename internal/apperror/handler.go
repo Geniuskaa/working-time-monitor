@@ -20,7 +20,6 @@ func (wr *wrapper) Handle(w http.ResponseWriter, r *http.Request) {
 	wr.log.Errorf("An error occured: %v", err)
 
 	appError, ok := err.(AppError)
-
 	if !ok {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrNotFound = NewAppError(nil, "not found", http.StatusNotFound)
+	ErrNotFound     = NewAppError(nil, "not found", http.StatusNotFound)
+	ErrUnauthorized = NewAppError(nil, "Unauthorized", http.StatusUnauthorized)
 )
 
 type AppError interface {
@@ -17,9 +18,9 @@ type AppError interface {
 }
 
 type HttpError struct {
-	Err    error
-	Detail string
-	Status int
+	Err    error  `json:"err,omitempty"`
+	Detail string `json:"detail"`
+	Status int    `json:"-"`
 }
 
 func (e *HttpError) Error() string {
@@ -46,4 +47,12 @@ func NewAppError(err error, detail string, status int) AppError {
 		Detail: detail,
 		Status: status,
 	}
+}
+
+func NewInternalServerError(err error, detail string) AppError {
+	return NewAppError(err, detail, http.StatusInternalServerError)
+}
+
+func NewBadRequestError(err error, detail string) AppError {
+	return NewAppError(err, detail, http.StatusInternalServerError)
 }
