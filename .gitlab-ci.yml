@@ -5,10 +5,7 @@ stages:
   - build
 
 unit tests:
-  image: golang:latest
   stage: test
-  tags:
-    - camelninja
   script:
     - go get -t -d ./...
     - go test ./...
@@ -18,10 +15,7 @@ unit tests:
     - merge_requests
 
 try to build:
-  image: golang:latest
   stage: build
-  tags:
-    - camelninja
   script:
     - go get -t -d ./...
     - go build -v ./...
