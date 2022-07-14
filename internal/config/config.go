@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -35,8 +34,9 @@ type Config struct {
 
 func NewConfig(profile string) (cfg *Config, err error) {
 	cfg = &Config{}
-	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
-	err = cleanenv.ReadConfig(cfgPath, cfg)
+	//cfgPath := fmt.Sprintf("configs/%s.yml", profile)
+	err = cleanenv.ReadEnv(cfg)
+	//err = cleanenv.ReadConfig(cfgPath, cfg)
 	if err != nil {
 		return nil, err
 	}
