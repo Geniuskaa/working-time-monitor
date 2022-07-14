@@ -6,8 +6,6 @@ stages:
 
 unit tests:
   stage: test
-  tags:
-    - camelninja
   script:
     - go get -t -d ./...
     - go test ./...
@@ -18,8 +16,6 @@ unit tests:
 
 try to build:
   stage: build
-  tags:
-    - camelninja
   script:
     - go get -t -d ./...
     - go build -v ./...
