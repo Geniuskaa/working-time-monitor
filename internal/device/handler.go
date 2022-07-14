@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"net/http"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/apperror"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"strconv"
 )
@@ -27,36 +28,31 @@ func NewHandler(ctx context.Context, log *zap.SugaredLogger, service Service) Ha
 
 func (h *handler) Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Get("/", h.getMobileDevices)
+	r.Get("/", apperror.NewWrapper(h.log, h.getMobileDevices).Handle)
 	r.Get("/rent/{id}", h.rentDevice)
 	r.Get("/return/{id}", h.returnDevice)
 	return r
 }
 
-func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) {
+func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("GetMobileDevices")
 	ctx, span := tr.Start(h.ctx, "handler-GetMobileDevices")
 	defer span.End()
 	os := r.URL.Query().Get("os")
 	devices, err := h.service.GetMobileDevices(ctx, os)
 	if err != nil {
-		h.log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
 	body, err := json.Marshal(devices)
 	if err != nil {
-		h.log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(body)
 	if err != nil {
-		h.log.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return err
 	}
+	return nil
 }
 
 func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) {
