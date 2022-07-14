@@ -1,25 +1,57 @@
-image: golang:latest
-
 stages:
-  - test
-  - build
+    - build
+    - deploy
 
-unit tests:
-  stage: test
-  script:
-    - go get -t -d ./...
-    - go test ./...
-  only:
-    - dev
-    - pushes
-    - merge_requests
+build to dev:
+    tags:
+        - camelninja
+    stage: build
+    image: docker
+    services:
+        - docker:dind
+    before_script:
+        - export VERSION=$CI_COMMIT_SHORT_SHA
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    script:
+        - docker build -t $CI_REGISTRY_IMAGE:$VERSION .
+        - docker tag $CI_REGISTRY_IMAGE:$VERSION $CI_REGISTRY_IMAGE:latest
+        - docker push $CI_REGISTRY_IMAGE
+    after_script:
+        - docker logout $CI_REGISTRY
+    only:
+        - dev
 
-try to build:
-  stage: build
-  script:
-    - go get -t -d ./...
-    - go build -v ./...
-  only:
-    - dev
-    - pushes
-    - merge_requests
+deploy to dev:
+    tags:
+        - camelninja
+    stage: deploy
+    variables:
+        CONTAINER_NAME: $CI_PROJECT_NAME-dev
+        PORT: 7001
+
+    before_script:
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    script:
+        - docker pull $CI_REGISTRY_IMAGE:latest
+        - docker stop ${CONTAINER_NAME} || true
+        - docker rm -f ${CONTAINER_NAME} || true
+        - >
+            docker run 
+            --name=$CONTAINER_NAME 
+            -p $PORT:7001  
+            -e KEYCLOAK_HOST=$KEYCLOAK_HOST 
+            -e KEYCLOAK_REALM=$KEYCLOAK_REALM 
+            -e PG_DATABASE=$PG_DATABASE 
+            -e PG_HOST=$PG_HOST 
+            -e PG_PASSWORD=$PG_PASSWORD 
+            -e PG_PORT=$PG_PORT 
+            -e PG_USER=$PG_USER 
+            -e TWJ_PUBLIC_KEY
+            --restart always 
+            -d 
+            $CI_REGISTRY_IMAGE:latest
+after_script:
+        - docker logout $CI_REGISTRY
+    only:
+        - dev
