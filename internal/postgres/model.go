@@ -34,6 +34,7 @@ type UserPrincipal struct {
 	Email    string
 }
 
+// Skill represents the model for an user
 type Skill struct {
 	Skills string
 }

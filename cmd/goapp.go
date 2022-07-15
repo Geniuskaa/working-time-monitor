@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/MicahParks/keyfunc"
+	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -15,7 +16,6 @@ import (
 	"go.uber.org/zap/zapcore"
 	"io/ioutil"
 
-	"github.com/go-chi/chi/v5"
 	"net"
 	"net/http"
 	"os"
@@ -45,29 +45,11 @@ const (
 // @in header
 // @name Authorization
 func main() {
-	// conf, err := config.NewConfig("prod")
-	conf := &config.Config{
-		DB: config.DB{
-			MigrationsSourceURL: "",
-			Hostname:            "scb-monitor.ru",
-			Port:                5432,
-			Username:            "scb_monitor",
-			Password:            "fjdsj234mrktio4",
-			DatabaseName:        "scb_monitor",
-		},
-		App: config.App{
-			Host: "0.0.0.0",
-			Port: "7001",
-		},
-		Keycloak: config.Keycloak{
-			BasePath: "https://kc.scb-monitor.ru",
-			Realm:    "master",
-		},
-	}
-	fmt.Println(conf)
-	/*if err != nil {
+
+	conf, err := config.NewConfig()
+	if err != nil {
 		panic("Error with reading config")
-	}*/
+	}
 
 	if err := execute(net.JoinHostPort(conf.App.Host, conf.App.Port), conf); err != nil {
 		os.Exit(1)

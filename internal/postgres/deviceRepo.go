@@ -23,7 +23,7 @@ func (d *Db) GetMobileDevices(ctx context.Context) ([]*model.MobileDevice, error
 	tr := otel.Tracer("GetMobileDevices")
 	ctx, span := tr.Start(ctx, "repository-GetMobileDevices")
 	defer span.End()
-	q := "SELECT d.id, d.name, d.os  FROM mobile_devices d"
+	q := "SELECT d.id, d.name_mob_dev, d.os  FROM mobile_devices d"
 	rows, err := d.Db.QueryContext(ctx, q)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (d *Db) GetMobileDevicesByOs(ctx context.Context, os string) ([]*model.Mobi
 	tr := otel.Tracer("GetMobileDevicesByOs")
 	ctx, span := tr.Start(ctx, "repository-GetMobileDevicesByOs")
 	defer span.End()
-	q := "SELECT d.id, d.name, d.os  FROM mobile_devices d WHERE d.os = $1"
+	q := "SELECT d.id, d.name_mob_dev, d.os  FROM mobile_devices d WHERE d.os = $1"
 	rows, err := d.Db.QueryContext(ctx, q, os)
 	if err != nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (d *Db) GetMobileDeviceById(ctx context.Context, id int) (*model.MobileDevi
 	tr := otel.Tracer("GetMobileDeviceById")
 	ctx, span := tr.Start(ctx, "repository-GetMobileDeviceById")
 	defer span.End()
-	q := `SELECT id, name, os FROM mobile_devices WHERE id = $1`
+	q := `SELECT id, name_mob_dev, os FROM mobile_devices WHERE id = $1`
 	row := d.Db.QueryRowContext(ctx, q, id)
 	device := model.MobileDevice{}
 	err := row.Scan(&device.Id, &device.Name, &device.Os)

@@ -48,6 +48,7 @@ deploy to dev:
             -e PG_PORT=$PG_PORT 
             -e PG_USER=$PG_USER 
             -e TWJ_PUBLIC_KEY
+            --restart always 
             -d 
             $CI_REGISTRY_IMAGE:latest
     after_script:
