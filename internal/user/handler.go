@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"strconv"
@@ -65,6 +66,15 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 	return tp, nil
 }
 
+// GetUsersByEmployeeId godoc
+// @Summary Get users with certain employee_id
+// @Description Get users with certain employee_id
+// @Tags users
+// @Produce  json
+// @Param empl-id path int true "Employee ID"
+// @Success 200 {array} user.UserWithProjectsDTO
+// @Router /users/employee/{empl-id} [get]
+// @Security ApiKeyAuth
 func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-GetUsersByEmployeeId")
 	ctx, span := tr.Start(h.ctx, "handler-GetUsersByEmployeeId")
@@ -137,6 +147,14 @@ func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Requ
 	return
 }
 
+// GetEmployeeList godoc
+// @Summary Get employees list
+// @Description Get employees list
+// @Tags users
+// @Produce  json
+// @Success 200 {array} user.EmpolyeeDTO
+// @Router /users/employees [get]
+// @Security ApiKeyAuth
 func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-GetEmployeeList")
 	ctx, span := tr.Start(h.ctx, "handler-GetEmployeeList")

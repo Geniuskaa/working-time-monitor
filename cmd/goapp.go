@@ -31,6 +31,19 @@ const (
 	id          = 1
 )
 
+// @title Swagger Example API
+// @version 1.0
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	// conf, err := config.NewConfig("prod")
 	conf := &config.Config{
