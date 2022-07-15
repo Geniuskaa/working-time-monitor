@@ -204,3 +204,17 @@ func (s *Service) addSkillToUser(ctx context.Context, userPrincipal *auth.UserPr
 
 	return nil
 }
+
+func (s *Service) getUserProfiles(ctx context.Context) ([]*postgres.UserProfile, error) {
+	tr := otel.Tracer("service-getUserProfiles")
+	ct, span := tr.Start(ctx, "service-getUserProfiles")
+	defer span.End()
+
+	users, err := s.repo.GetUsersProfiles(ct)
+	if err != nil {
+		s.log.Error(err)
+		return nil, err
+	}
+
+	return users, nil
+}

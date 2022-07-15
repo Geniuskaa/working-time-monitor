@@ -53,3 +53,13 @@ type Device struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
+
+type UserProfile struct {
+	DisplayName   string `json:"display_name"`
+	Employee      string `json:"employee"`
+	Phone         string `json:"phone"`
+	Email         string `json:"email"`
+	Devices       string `json:"devices"`
+	MobileDevices string `json:"mobile_devices"`
+	Skills        string `json:"skills"`
+}

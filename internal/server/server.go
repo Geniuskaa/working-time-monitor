@@ -40,10 +40,9 @@ func (s *Server) Init(atom zap.AtomicLevel) {
 	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	serv := user.NewService(s.db, s.logger)
 
-	s.mux.Get("/api/swagger/*", httpSwagger.WrapHandler)
-
 	s.mux.HandleFunc("/logger", atom.ServeHTTP)
 	s.mux.Mount("/debug", s.profiler())
+	s.mux.Mount("/api/v1/swagger/", httpSwagger.WrapHandler)
 
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())

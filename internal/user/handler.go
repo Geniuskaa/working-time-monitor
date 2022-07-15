@@ -45,6 +45,7 @@ func (h *handler) Routes() chi.Router {
 	r.Get("/{user-id}", h.GetUserInfoById)
 	r.Post("/skills", h.AddSkillToUser)
 	r.Post("/profile", h.AddUserProfiles)
+	r.Get("/profile", h.GetUsersProfiles)
 
 	return r
 }
@@ -257,6 +258,29 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 	}
 
 	writer.Write([]byte("Succesfully added all profiles!"))
+
+	return
+}
+
+func (h *handler) GetUsersProfiles(writer http.ResponseWriter, request *http.Request) {
+	tr := otel.Tracer("handler-GetUsersProfiles")
+	ctx, span := tr.Start(h.ctx, "handler-GetUsersProfiles")
+	defer span.End()
+
+	user, err := h.service.getUserProfiles(ctx)
+	if err != nil {
+		http.Error(writer, "Error getting user profiles", http.StatusInternalServerError)
+		return
+	}
+
+	body, err := json.Marshal(user)
+	if err != nil {
+		http.Error(writer, "Error marshaling user profiles", http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Add("Content-Type", "application/json")
+	writer.Write(body)
 
 	return
 }
