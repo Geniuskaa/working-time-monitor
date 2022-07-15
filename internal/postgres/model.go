@@ -19,7 +19,7 @@ type User struct {
 
 type Employee struct {
 	Id   int    `json:"id"`
-	Name string `json:"name"`
+	Name string `json:"name_empl"`
 }
 
 type UserWithProjects struct {

@@ -37,7 +37,7 @@ func (d *Db) GetUsersByEmplId(ctx context.Context, id int) ([]*UserWithProjects,
 
 	rows, err := d.Db.QueryContext(ct, `SELECT users.id,
        users.display_name,
-       array_to_string(array_agg(pr.name), ', ')
+       array_to_string(array_agg(pr.name_pr), ', ')
 from users
          right join user_projects up on users.id = up.user_id
          right join projects pr on up.project_id = pr.id
@@ -113,7 +113,8 @@ func (d *Db) GetUser(ctx context.Context, userId int) (*User, *Employee, error) 
 	}
 
 	empl := &Employee{}
-	err = d.Db.GetContext(ct, empl, `SELECT * from employees where id=$1`, user.EmployeeId)
+	row = d.Db.QueryRowContext(ct, `SELECT * from employees where id=$1`, user.EmployeeId)
+	err = row.Scan(&empl.Id, &empl.Name)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -139,15 +140,12 @@ func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email 
 
 	var oldSkills string
 	err = row.Scan(&oldSkills)
+	var newSkills string
 	if err != nil {
-		errOfRollback := tx.Rollback()
-		if errOfRollback != nil {
-			return errOfRollback
-		}
-		return err
+		newSkills = skills
+	} else {
+		newSkills = fmt.Sprintf(oldSkills + "," + skills)
 	}
-
-	newSkills := fmt.Sprintf(oldSkills + "," + skills)
 
 	_, err = tx.Exec(`UPDATE users u set skills =$1 where u.username=$2 and u.email=$3`, newSkills, username, email)
 	if err != nil {
@@ -183,7 +181,7 @@ func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) 
 			continue
 		}
 
-		emplResult := tx.QueryRow(`INSERT INTO employees (name) values ($1) RETURNING id`, user.Employee)
+		emplResult := tx.QueryRow(`INSERT INTO employees (name_empl) values ($1) RETURNING id`, user.Employee)
 
 		var emplId int
 		err = emplResult.Scan(&emplId)
@@ -213,7 +211,7 @@ func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) 
 				continue
 			}
 
-			_, err := tx.Exec(`INSERT INTO devices (name, type, user_id) values ($1, $2, $3)`,
+			_, err := tx.Exec(`INSERT INTO devices (name_dev, type_dev, user_id) values ($1, $2, $3)`,
 				device.Name, device.Type, userId)
 
 			if err != nil {
@@ -227,7 +225,7 @@ func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) 
 		if user.MobileDevices != nil {
 			for _, device := range user.MobileDevices {
 				if strings.HasPrefix(strings.ToLower(device), "iphone") {
-					_, err := tx.Exec(`INSERT INTO mobile_devices (name, os) VALUES ($1, $2)`, device, "ios")
+					_, err := tx.Exec(`INSERT INTO mobile_devices (name_mob_dev, os) VALUES ($1, $2)`, device, "ios")
 					if err != nil {
 						errOfRollback := tx.Rollback()
 						if errOfRollback != nil {
@@ -236,7 +234,7 @@ func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) 
 					}
 					continue
 				}
-				_, err := tx.Exec(`INSERT INTO mobile_devices (name, os) VALUES ($1, $2)`, device, "android")
+				_, err := tx.Exec(`INSERT INTO mobile_devices (name_mob_dev, os) VALUES ($1, $2)`, device, "android")
 				if err != nil {
 					errOfRollback := tx.Rollback()
 					if errOfRollback != nil {
