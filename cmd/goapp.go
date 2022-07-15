@@ -32,11 +32,10 @@ const (
 )
 
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, err := config.NewConfig()
 	if err != nil {
 		panic("Error with reading config")
 	}
-
 	if err := execute(net.JoinHostPort(conf.App.Host, conf.App.Port), conf); err != nil {
 		os.Exit(1)
 	}
@@ -89,18 +88,18 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
+	/*fileEncoder := zapcore.NewJSONEncoder(encoderConfig)*/
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+	/*file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
 	if err != nil {
 		panic("Error with creating or opening file")
-	}
+	}*/
 
-	writeSyncer := zapcore.AddSync(file)
+	// writeSyncer := zapcore.AddSync(file)
 	atom := zap.NewAtomicLevelAt(zapcore.InfoLevel)
 	core := zapcore.NewTee(
-		zapcore.NewCore(fileEncoder, writeSyncer, atom),
+		// zapcore.NewCore(fileEncoder, writeSyncer, atom),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), atom),
 	)
 

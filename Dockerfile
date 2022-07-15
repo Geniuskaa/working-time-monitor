@@ -9,7 +9,7 @@ RUN go mod tidy
 COPY . ./
 RUN CGO_ENABLED=0 go build -o ./build/goapp ./cmd
 
-FROM scratch
+FROM alpine
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /app/configs /configs
