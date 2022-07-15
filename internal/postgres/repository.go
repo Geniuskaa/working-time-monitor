@@ -266,8 +266,8 @@ func (d *Db) GetUsersProfiles(ctx context.Context) ([]*UserProfile, error) {
 	defer span.End()
 
 	rows, err := d.Db.QueryContext(ct,
-		`SELECT usr.display_name,usr.phone,usr.email,usr.skills,e.name,array_to_string(array_agg(d.name), ', '),
-       		  coalesce((SELECT array_to_string(array_agg(md.name), ', ')
+		`SELECT usr.display_name,usr.phone,usr.email,usr.skills,e.name_empl,array_to_string(array_agg(d.name_dev), ', '),
+       		  coalesce((SELECT array_to_string(array_agg(md.name_mob_dev), ', ')
         				from users u
             				right join renting_devices rd on u.id = rd.user_id
             				right join mobile_devices md on md.id = rd.mobile_device_id
@@ -276,7 +276,7 @@ func (d *Db) GetUsersProfiles(ctx context.Context) ([]*UserProfile, error) {
 			from users usr
     			left outer join employees e on e.id = usr.empl_id
     			left outer join devices d on usr.id = d.user_id
-			group by usr.username, usr.display_name, usr.phone, usr.email, usr.skills, e.name;`)
+			group by usr.username, usr.display_name, usr.phone, usr.email, usr.skills, e.name_empl;`)
 	if err != nil {
 		return nil, err
 	}
