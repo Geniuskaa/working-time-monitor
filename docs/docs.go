@@ -21,7 +21,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/devices/": {
+        "/devices/": {
             "get": {
                 "description": "get mobile devices",
                 "consumes": [
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/devices/rent/{device_id}": {
+        "/devices/rent/{device_id}": {
             "get": {
                 "description": "rent device",
                 "consumes": [
@@ -105,7 +105,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/devices/return/{device_id}": {
+        "/devices/return/{device_id}": {
             "get": {
                 "description": "return device",
                 "consumes": [

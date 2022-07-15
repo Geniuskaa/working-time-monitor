@@ -44,7 +44,7 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /api/v1/devices/:
+  /devices/:
     get:
       consumes:
       - application/json
@@ -70,7 +70,7 @@ paths:
       summary: List mobile devices
       tags:
       - devices
-  /api/v1/devices/rent/{device_id}:
+  /devices/rent/{device_id}:
     get:
       consumes:
       - application/json
@@ -99,7 +99,7 @@ paths:
       summary: Rent device
       tags:
       - devices
-  /api/v1/devices/return/{device_id}:
+  /devices/return/{device_id}:
     get:
       consumes:
       - application/json
