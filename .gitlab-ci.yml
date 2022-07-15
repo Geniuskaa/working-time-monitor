@@ -51,11 +51,7 @@ deploy to dev:
             --restart always 
             -d 
             $CI_REGISTRY_IMAGE:latest
-<<<<<<< HEAD
     after_script:
-=======
-after_script:
->>>>>>> 2cdf6a5 (Update .gitlab-ci.yml file)
-        - docker logout $CI_REGISTRY
-    only:
-        - dev
+            - docker logout $CI_REGISTRY
+        only:
+            - dev
