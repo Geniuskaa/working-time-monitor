@@ -1,0 +1,176 @@
+basePath: /api/v1
+definitions:
+  apperror.HttpError:
+    description: Information about the error
+    properties:
+      detail:
+        type: string
+    type: object
+  device.RentingDeviceResponse:
+    description: Information about the current status of device
+    properties:
+      display_name:
+        example: Aydar Ibragimov
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Iphone 12 Pro
+        type: string
+    type: object
+  user.EmpolyeeDTO:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  user.UserWithProjectsDTO:
+    properties:
+      display_name:
+        type: string
+      id:
+        type: integer
+      projects:
+        type: string
+    type: object
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /api/v1/devices/:
+    get:
+      consumes:
+      - application/json
+      description: get mobile devices
+      parameters:
+      - description: os
+        in: query
+        name: os
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/device.RentingDeviceResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.HttpError'
+      summary: List mobile devices
+      tags:
+      - devices
+  /api/v1/devices/rent/{device_id}:
+    get:
+      consumes:
+      - application/json
+      description: rent device
+      parameters:
+      - description: Device ID
+        in: path
+        name: device_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/device.RentingDeviceResponse'
+        "400":
+          description: User input error, see error detail
+          schema:
+            $ref: '#/definitions/apperror.HttpError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.HttpError'
+      summary: Rent device
+      tags:
+      - devices
+  /api/v1/devices/return/{device_id}:
+    get:
+      consumes:
+      - application/json
+      description: return device
+      parameters:
+      - description: Device ID
+        in: path
+        name: device_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/device.RentingDeviceResponse'
+        "400":
+          description: User input error, see error detail
+          schema:
+            $ref: '#/definitions/apperror.HttpError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/apperror.HttpError'
+      summary: Return device
+      tags:
+      - devices
+  /users/employee/{empl-id}:
+    get:
+      description: Get users with certain employee_id
+      parameters:
+      - description: Employee ID
+        in: path
+        name: empl-id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.UserWithProjectsDTO'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Get users with certain employee_id
+      tags:
+      - users
+  /users/employees:
+    get:
+      description: Get employees list
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.EmpolyeeDTO'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Get employees list
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
