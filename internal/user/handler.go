@@ -68,7 +68,7 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 }
 
 // GetUsersByEmployeeId godoc
-// @Summary Get users with certain employee_id
+// @Summary Метод получения сотрудников
 // @Description Get users with certain employee_id
 // @Tags users
 // @Produce  json
@@ -112,6 +112,15 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 	return
 }
 
+// GetUserInfoById godoc
+// @Summary Метод получения подробной информации о сотруднике
+// @Description Get info about user by user id
+// @Tags users
+// @Produce  json
+// @Param user-id path int true "User ID"
+// @Success 200 {array} user.UserDTO
+// @Router /users/{user-id} [get]
+// @Security ApiKeyAuth
 func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-GetUserInfoById")
 	ctx, span := tr.Start(h.ctx, "handler-GetUserInfoById")
@@ -149,7 +158,7 @@ func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Requ
 }
 
 // GetEmployeeList godoc
-// @Summary Get employees list
+// @Summary Метод получения списка специальностей
 // @Description Get employees list
 // @Tags users
 // @Produce  json
@@ -185,6 +194,15 @@ func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Requ
 	return
 }
 
+// AddSkillToUser godoc
+// @Summary Метод для добавления навыков
+// @Description Add skills to user profile
+// @Tags users
+// @Accept json
+// @Produce  plain
+// @Success 200 {string} Succefully added!
+// @Router /users/skills [post]
+// @Security ApiKeyAuth
 func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-AddSkillToUser")
 	ctx, span := tr.Start(h.ctx, "handler-AddSkillToUser")
@@ -222,6 +240,15 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 	return
 }
 
+// AddUserProfiles godoc
+// @Summary Метод для получения информации о профиле
+// @Description Parse xlxs file and put profiles from it to DB
+// @Tags users
+// @Accept  multipart/form-data
+// @Produce  plain
+// @Success 200 {string} Succesfully added all profiles!
+// @Router /users/profile [post]
+// @Security ApiKeyAuth
 func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-AddUserProfiles")
 	ctx, span := tr.Start(h.ctx, "handler-AddUserProfiles")
@@ -262,6 +289,14 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 	return
 }
 
+// GetUsersProfiles godoc
+// @Summary Метод для получения информации о профиле
+// @Description Get all users from DB and return as json
+// @Tags users
+// @Produce  json
+// @Success 200 {array} postgres.UserProfile
+// @Router /users/profile [get]
+// @Security ApiKeyAuth
 func (h *handler) GetUsersProfiles(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-GetUsersProfiles")
 	ctx, span := tr.Start(h.ctx, "handler-GetUsersProfiles")

@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api/go/v1
 definitions:
   apperror.HttpError:
     description: Information about the error
@@ -19,20 +19,73 @@ definitions:
         example: Iphone 12 Pro
         type: string
     type: object
+  postgres.UserProfile:
+    description: User profile information
+    properties:
+      devices:
+        example: ""
+        type: string
+      display_name:
+        example: Зиннатуллин Эмиль Рамилевич
+        type: string
+      email:
+        example: test@mail.ru
+        type: string
+      employee:
+        example: Go-developer
+        type: string
+      mobile_devices:
+        example: iphone 11
+        type: string
+      phone:
+        example: "+79472738427"
+        type: string
+      skills:
+        example: A lot of skills
+        type: string
+    type: object
   user.EmpolyeeDTO:
     properties:
       id:
+        example: 1
         type: integer
       name:
+        example: Go-developer
+        type: string
+    type: object
+  user.UserDTO:
+    description: Main info about user and his projects
+    properties:
+      display_name:
+        example: Зиннатуллин Эмиль Рамилевич
+        type: string
+      email:
+        example: test@mail.ru
+        type: string
+      employee:
+        example: Go-developer
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone:
+        example: "+79648246372"
+        type: string
+      skills:
+        example: A lot of skills
         type: string
     type: object
   user.UserWithProjectsDTO:
+    description: Info about user and his projects
     properties:
       display_name:
+        example: Зиннатуллин Эмиль Рамилевич
         type: string
       id:
+        example: 1
         type: integer
       projects:
+        example: Халвёнок, SCB-monitor
         type: string
     type: object
 info:
@@ -134,6 +187,29 @@ paths:
       summary: Return device
       tags:
       - devices
+  /users/{user-id}:
+    get:
+      description: Get info about user by user id
+      parameters:
+      - description: User ID
+        in: path
+        name: user-id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.UserDTO'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Метод получения подробной информации о сотруднике
+      tags:
+      - users
   /users/employee/{empl-id}:
     get:
       description: Get users with certain employee_id
@@ -154,7 +230,7 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get users with certain employee_id
+      summary: Метод получения сотрудников
       tags:
       - users
   /users/employees:
@@ -171,7 +247,57 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get employees list
+      summary: Метод получения списка специальностей
+      tags:
+      - users
+  /users/profile:
+    get:
+      description: Get all users from DB and return as json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/postgres.UserProfile'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Метод для получения информации о профиле
+      tags:
+      - users
+    post:
+      consumes:
+      - multipart/form-data
+      description: Parse xlxs file and put profiles from it to DB
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Метод для получения информации о профиле
+      tags:
+      - users
+  /users/skills:
+    post:
+      consumes:
+      - application/json
+      description: Add skills to user profile
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Метод для добавления навыков
       tags:
       - users
 securityDefinitions:

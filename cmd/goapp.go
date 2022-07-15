@@ -39,7 +39,7 @@ const (
 // @contact.url http://www.swagger.io/support
 // @contact.email support@swagger.io
 
-// @BasePath /api/v1
+// @BasePath /api/go/v1
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header

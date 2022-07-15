@@ -11,7 +11,7 @@ type User struct {
 	EmployeeId  int              `json:"employee"`
 	Email       string           `json:"email"`
 	Phone       string           `json:"phone"`
-	Birthday    pgtype.Date      `json:"birthday"`
+	Birthday    pgtype.Date      `json:"birthday" swaggerignore:"true"`
 	Skills      string           `json:"skills"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
@@ -34,9 +34,10 @@ type UserPrincipal struct {
 	Email    string
 }
 
-// Skill represents the model for an user
+// Skill model info
+// @Description skills which you want add to profile
 type Skill struct {
-	Skills string
+	Skills string `example:"Some skills"`
 }
 
 type UserProfileFromExcel struct {
@@ -54,12 +55,14 @@ type Device struct {
 	Type string `json:"type"`
 }
 
+// UserProfile model info
+// @Description User profile information
 type UserProfile struct {
-	DisplayName   string `json:"display_name"`
-	Employee      string `json:"employee"`
-	Phone         string `json:"phone"`
-	Email         string `json:"email"`
-	Devices       string `json:"devices"`
-	MobileDevices string `json:"mobile_devices"`
-	Skills        string `json:"skills"`
+	DisplayName   string `json:"display_name" example:"Зиннатуллин Эмиль Рамилевич"`
+	Employee      string `json:"employee" example:"Go-developer"`
+	Phone         string `json:"phone" example:"+79472738427"`
+	Email         string `json:"email" example:"test@mail.ru"`
+	Devices       string `json:"devices" example:""`
+	MobileDevices string `json:"mobile_devices" example:"iphone 11"`
+	Skills        string `json:"skills" example:"A lot of skills"`
 }

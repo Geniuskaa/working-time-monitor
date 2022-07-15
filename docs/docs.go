@@ -178,7 +178,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get users with certain employee_id",
+                "summary": "Метод получения сотрудников",
                 "parameters": [
                     {
                         "type": "integer",
@@ -215,7 +215,7 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Get employees list",
+                "summary": "Метод получения списка специальностей",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -223,6 +223,125 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/user.EmpolyeeDTO"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all users from DB and return as json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Метод для получения информации о профиле",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/postgres.UserProfile"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Parse xlxs file and put profiles from it to DB",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Метод для получения информации о профиле",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/skills": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add skills to user profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Метод для добавления навыков",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user-id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get info about user by user id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Метод получения подробной информации о сотруднике",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user-id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user.UserDTO"
                             }
                         }
                     }
@@ -258,28 +377,98 @@ const docTemplate = `{
                 }
             }
         },
+        "postgres.UserProfile": {
+            "description": "User profile information",
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "string",
+                    "example": ""
+                },
+                "display_name": {
+                    "type": "string",
+                    "example": "Зиннатуллин Эмиль Рамилевич"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "test@mail.ru"
+                },
+                "employee": {
+                    "type": "string",
+                    "example": "Go-developer"
+                },
+                "mobile_devices": {
+                    "type": "string",
+                    "example": "iphone 11"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+79472738427"
+                },
+                "skills": {
+                    "type": "string",
+                    "example": "A lot of skills"
+                }
+            }
+        },
         "user.EmpolyeeDTO": {
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Go-developer"
+                }
+            }
+        },
+        "user.UserDTO": {
+            "description": "Main info about user and his projects",
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "example": "Зиннатуллин Эмиль Рамилевич"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "test@mail.ru"
+                },
+                "employee": {
+                    "type": "string",
+                    "example": "Go-developer"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+79648246372"
+                },
+                "skills": {
+                    "type": "string",
+                    "example": "A lot of skills"
                 }
             }
         },
         "user.UserWithProjectsDTO": {
+            "description": "Info about user and his projects",
             "type": "object",
             "properties": {
                 "display_name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Зиннатуллин Эмиль Рамилевич"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "projects": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Халвёнок, SCB-monitor"
                 }
             }
         }
@@ -297,7 +486,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/api/v1",
+	BasePath:         "/api/go/v1",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",
 	Description:      "",

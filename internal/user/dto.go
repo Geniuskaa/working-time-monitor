@@ -4,25 +4,28 @@ import "github.com/jackc/pgx/v5/pgtype"
 
 // EmpolyeeDTO represents the model for an user
 type EmpolyeeDTO struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
+	Id   int    `json:"id" example:"1"`
+	Name string `json:"name" example:"Go-developer"`
 }
 
-// UserWithProjectsDTO represents the model for an user
+// UserWithProjectsDTO  model info
+// @Description Info about user and his projects
 type UserWithProjectsDTO struct {
-	Id          int    `json:"id"`
-	DisplayName string `json:"display_name"`
-	Projects    string `json:"projects"`
+	Id          int    `json:"id" example:"1"`
+	DisplayName string `json:"display_name" example:"Зиннатуллин Эмиль Рамилевич"`
+	Projects    string `json:"projects" example:"Халвёнок, SCB-monitor"`
 }
 
+// UserDTO  model info
+// @Description Main info about user and his projects
 type UserDTO struct {
-	Id          int         `json:"id"`
-	DisplayName string      `json:"display_name"`
-	Employee    string      `json:"employee"`
-	Email       string      `json:"email"`
-	Phone       string      `json:"phone"`
-	Birthday    pgtype.Date `json:"birthday"`
-	Skills      string      `json:"skills"`
+	Id          int         `json:"id" example:"1"`
+	DisplayName string      `json:"display_name" example:"Зиннатуллин Эмиль Рамилевич"`
+	Employee    string      `json:"employee" example:"Go-developer"`
+	Email       string      `json:"email" example:"test@mail.ru"`
+	Phone       string      `json:"phone" example:"+79648246372"`
+	Birthday    pgtype.Date `json:"birthday" swaggerignore:"true"`
+	Skills      string      `json:"skills" example:"A lot of skills"`
 }
 
 type UserProfileDTO struct {
