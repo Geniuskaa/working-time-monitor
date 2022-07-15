@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
@@ -40,6 +41,7 @@ func (s *Server) Init(atom zap.AtomicLevel) {
 
 	s.mux.HandleFunc("/logger", atom.ServeHTTP)
 	s.mux.Mount("/debug", s.profiler())
+	s.mux.Handle("/metrics", promhttp.Handler())
 
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())

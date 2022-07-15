@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/MicahParks/keyfunc"
+	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -77,6 +79,10 @@ func execute(addr string, conf *config.Config) (err error) {
 		db.Close()
 		logger.Sync()
 	}()
+
+	collector := sqlstats.NewStatsCollector(conf.DB.DatabaseName, db.Db)
+	// Register it with Prometheus
+	prometheus.MustRegister(collector)
 
 	mux := chi.NewRouter()
 	application := server.NewServer(ct, logger, mux, db, conf)
