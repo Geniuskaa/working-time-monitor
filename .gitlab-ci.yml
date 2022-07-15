@@ -52,6 +52,6 @@ deploy to dev:
             -d 
             $CI_REGISTRY_IMAGE:latest
     after_script:
-            - docker logout $CI_REGISTRY
-        only:
-            - dev
+        - docker logout $CI_REGISTRY
+    only:
+        - dev
