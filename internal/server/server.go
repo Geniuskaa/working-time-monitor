@@ -40,7 +40,7 @@ func (s *Server) Init(atom zap.AtomicLevel) {
 	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	serv := user.NewService(s.db, s.logger)
 
-	s.mux.Get("/swagger/*", httpSwagger.WrapHandler)
+	s.mux.Get("/api/swagger/*", httpSwagger.WrapHandler)
 
 	s.mux.HandleFunc("/logger", atom.ServeHTTP)
 	s.mux.Mount("/debug", s.profiler())

@@ -67,6 +67,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/apperror.HttpError'
+      security:
+      - ApiKeyAuth: []
       summary: List mobile devices
       tags:
       - devices
@@ -96,6 +98,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/apperror.HttpError'
+      security:
+      - ApiKeyAuth: []
       summary: Rent device
       tags:
       - devices
@@ -125,6 +129,8 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/apperror.HttpError'
+      security:
+      - ApiKeyAuth: []
       summary: Return device
       tags:
       - devices

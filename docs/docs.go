@@ -23,6 +23,11 @@ const docTemplate = `{
     "paths": {
         "/devices/": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "get mobile devices",
                 "consumes": [
                     "application/json"
@@ -63,6 +68,11 @@ const docTemplate = `{
         },
         "/devices/rent/{device_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "rent device",
                 "consumes": [
                     "application/json"
@@ -107,6 +117,11 @@ const docTemplate = `{
         },
         "/devices/return/{device_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "return device",
                 "consumes": [
                     "application/json"
