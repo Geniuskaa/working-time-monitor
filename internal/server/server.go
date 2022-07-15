@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
+	_ "scb-mobile/scb-monitor/scb-monitor-backend/go-app/docs"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/device"
@@ -38,8 +40,11 @@ func (s *Server) Init(atom zap.AtomicLevel) {
 	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	serv := user.NewService(s.db, s.logger)
 
+	s.mux.Get("/swagger/*", httpSwagger.WrapHandler)
+
 	s.mux.HandleFunc("/logger", atom.ServeHTTP)
 	s.mux.Mount("/debug", s.profiler())
+
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
 	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
 

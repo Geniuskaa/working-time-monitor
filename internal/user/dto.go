@@ -2,11 +2,13 @@ package user
 
 import "github.com/jackc/pgx/v5/pgtype"
 
+// EmpolyeeDTO represents the model for an user
 type EmpolyeeDTO struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
 
+// UserWithProjectsDTO represents the model for an user
 type UserWithProjectsDTO struct {
 	Id          int    `json:"id"`
 	DisplayName string `json:"display_name"`

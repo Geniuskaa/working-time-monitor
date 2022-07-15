@@ -17,10 +17,12 @@ type AppError interface {
 	ResponseHeaders() (int, map[string]string)
 }
 
+// HttpError model info
+// @Description Information about the error
 type HttpError struct {
-	Err    error  `json:"err,omitempty"`
+	Err    error  `json:"err,omitempty" swaggerignore:"true"`
 	Detail string `json:"detail"`
-	Status int    `json:"-"`
+	Status int    `json:"-" swaggerignore:"true"`
 }
 
 func (e *HttpError) Error() string {

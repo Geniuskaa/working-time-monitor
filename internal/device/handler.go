@@ -34,6 +34,16 @@ func (h *handler) Routes() chi.Router {
 	return r
 }
 
+// getMobileDevices godoc
+// @Summary      List mobile devices
+// @Description  get mobile devices
+// @Tags         devices
+// @Accept       json
+// @Produce      json
+// @Param        os    query     string  false  "os"
+// @Success      200   {array}   device.RentingDeviceResponse "OK"
+// @Failure      500   {object}  apperror.HttpError "Internal server error"
+// @Router       /api/v1/devices/ [get]
 func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("GetMobileDevices")
 	ctx, span := tr.Start(h.ctx, "handler-GetMobileDevices")
@@ -55,6 +65,17 @@ func (h *handler) getMobileDevices(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
+// rentDevice godoc
+// @Summary      Rent device
+// @Description  rent device
+// @Tags         devices
+// @Accept       json
+// @Produce      json
+// @Param        device_id    path     int  true  "Device ID"
+// @Success      200   {object}   device.RentingDeviceResponse "OK"
+// @Failure      400   {object}  apperror.HttpError "User input error, see error detail"
+// @Failure      500   {object}  apperror.HttpError "Internal server error"
+// @Router       /api/v1/devices/rent/{device_id} [get]
 func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("RentDevice")
 	ctx, span := tr.Start(h.ctx, "handler-RentDevice")
@@ -81,6 +102,17 @@ func (h *handler) rentDevice(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+// rentDevice godoc
+// @Summary      Return device
+// @Description  return device
+// @Tags         devices
+// @Accept       json
+// @Produce      json
+// @Param        device_id    path     int  true  "Device ID"
+// @Success      200   {object}   device.RentingDeviceResponse "OK"
+// @Failure      400   {object}  apperror.HttpError "User input error, see error detail"
+// @Failure      500   {object}  apperror.HttpError "Internal server error"
+// @Router       /api/v1/devices/return/{device_id} [get]
 func (h *handler) returnDevice(w http.ResponseWriter, r *http.Request) error {
 	tr := otel.Tracer("ReturnDevice")
 	ctx, span := tr.Start(h.ctx, "handler-ReturnDevice")
