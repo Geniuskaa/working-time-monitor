@@ -197,6 +197,12 @@ const docTemplate = `{
                                 "$ref": "#/definitions/user.UserWithProjectsDTO"
                             }
                         }
+                    },
+                    "404": {
+                        "description": "We couldn` + "`" + `t find users with such employee ID",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -262,7 +268,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Parse xlxs file and put profiles from it to DB",
+                "description": "Parse xlsx file and put profiles from it to DB",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -273,9 +279,30 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Метод для получения информации о профиле",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Xlsx file for parsing",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully added all profiles!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Error retrieving the File",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error setting the file size || Error parsing file",
                         "schema": {
                             "type": "string"
                         }
@@ -301,9 +328,20 @@ const docTemplate = `{
                     "users"
                 ],
                 "summary": "Метод для добавления навыков",
+                "parameters": [
+                    {
+                        "description": "Skills what we want to add",
+                        "name": "skills",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/postgres.Skill"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Successfully added!",
                         "schema": {
                             "type": "string"
                         }
@@ -344,6 +382,12 @@ const docTemplate = `{
                                 "$ref": "#/definitions/user.UserDTO"
                             }
                         }
+                    },
+                    "404": {
+                        "description": "We couldn` + "`" + `t find such user",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -374,6 +418,16 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Iphone 12 Pro"
+                }
+            }
+        },
+        "postgres.Skill": {
+            "description": "skills which you want add to profile",
+            "type": "object",
+            "properties": {
+                "skills": {
+                    "type": "string",
+                    "example": "Some skills"
                 }
             }
         },

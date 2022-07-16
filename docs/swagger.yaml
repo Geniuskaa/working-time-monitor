@@ -19,6 +19,13 @@ definitions:
         example: Iphone 12 Pro
         type: string
     type: object
+  postgres.Skill:
+    description: skills which you want add to profile
+    properties:
+      skills:
+        example: Some skills
+        type: string
+    type: object
   postgres.UserProfile:
     description: User profile information
     properties:
@@ -205,6 +212,10 @@ paths:
             items:
               $ref: '#/definitions/user.UserDTO'
             type: array
+        "404":
+          description: We couldn`t find such user
+          schema:
+            type: string
       security:
       - ApiKeyAuth: []
       summary: Метод получения подробной информации о сотруднике
@@ -228,6 +239,10 @@ paths:
             items:
               $ref: '#/definitions/user.UserWithProjectsDTO'
             type: array
+        "404":
+          description: We couldn`t find users with such employee ID
+          schema:
+            type: string
       security:
       - ApiKeyAuth: []
       summary: Метод получения сотрудников
@@ -270,12 +285,26 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Parse xlxs file and put profiles from it to DB
+      description: Parse xlsx file and put profiles from it to DB
+      parameters:
+      - description: Xlsx file for parsing
+        in: formData
+        name: file
+        required: true
+        type: file
       produces:
       - text/plain
       responses:
         "200":
-          description: OK
+          description: Successfully added all profiles!
+          schema:
+            type: string
+        "422":
+          description: Error retrieving the File
+          schema:
+            type: string
+        "500":
+          description: Error setting the file size || Error parsing file
           schema:
             type: string
       security:
@@ -288,11 +317,18 @@ paths:
       consumes:
       - application/json
       description: Add skills to user profile
+      parameters:
+      - description: Skills what we want to add
+        in: body
+        name: skills
+        required: true
+        schema:
+          $ref: '#/definitions/postgres.Skill'
       produces:
       - text/plain
       responses:
         "200":
-          description: OK
+          description: Successfully added!
           schema:
             type: string
       security:

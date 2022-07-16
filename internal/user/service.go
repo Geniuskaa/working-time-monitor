@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/xuri/excelize/v2"
 	"go.opentelemetry.io/otel"
@@ -16,6 +17,8 @@ type Service struct {
 	repo postgres.UserRepo
 	log  *zap.SugaredLogger
 }
+
+var ErrNoUsersWithSuchID = errors.New("No users with such employee ID")
 
 func NewService(repo postgres.UserRepo, log *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, log: log}
@@ -32,6 +35,11 @@ func (s *Service) getUsersByEmployeeId(ctx context.Context, id int) ([]UserWithP
 	if err != nil {
 		s.log.Error(err)
 		return nil, err
+	}
+
+	if len(users) == 0 {
+		s.log.Error(ErrNoUsersWithSuchID)
+		return nil, ErrNoUsersWithSuchID
 	}
 
 	usersDto := make([]UserWithProjectsDTO, len(users))

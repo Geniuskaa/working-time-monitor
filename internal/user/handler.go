@@ -74,6 +74,7 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 // @Produce  json
 // @Param empl-id path int true "Employee ID"
 // @Success 200 {array} user.UserWithProjectsDTO
+// @Failure 404   {string} string "We couldn`t find users with such employee ID"
 // @Router /users/employee/{empl-id} [get]
 // @Security ApiKeyAuth
 func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http.Request) {
@@ -90,6 +91,10 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 
 	users, err := h.service.getUsersByEmployeeId(ctx, id)
 	if err != nil {
+		if errors.Is(err, ErrNoUsersWithSuchID) {
+			http.Error(writer, "We couldn`t find users with such employee ID", http.StatusNotFound)
+			return
+		}
 		http.Error(writer, "Error when geting users", http.StatusInternalServerError)
 		return
 	}
@@ -119,6 +124,7 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 // @Produce  json
 // @Param user-id path int true "User ID"
 // @Success 200 {array} user.UserDTO
+// @Failure 404 {string} string "We couldn`t find such user"
 // @Router /users/{user-id} [get]
 // @Security ApiKeyAuth
 func (h *handler) GetUserInfoById(writer http.ResponseWriter, request *http.Request) {
@@ -199,8 +205,9 @@ func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Requ
 // @Description Add skills to user profile
 // @Tags users
 // @Accept json
+// @Param skills body postgres.Skill true "Skills what we want to add"
 // @Produce  plain
-// @Success 200 {string} Succefully added!
+// @Success 200 {string} string "Successfully added!"
 // @Router /users/skills [post]
 // @Security ApiKeyAuth
 func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Request) {
@@ -236,17 +243,20 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 
-	writer.Write([]byte("Succefully added!"))
+	writer.Write([]byte("Successfully added!"))
 	return
 }
 
 // AddUserProfiles godoc
 // @Summary Метод для получения информации о профиле
-// @Description Parse xlxs file and put profiles from it to DB
+// @Description Parse xlsx file and put profiles from it to DB
 // @Tags users
 // @Accept  multipart/form-data
+// @Param file formData file true "Xlsx file for parsing"
 // @Produce  plain
-// @Success 200 {string} Succesfully added all profiles!
+// @Success 200 {string} string "Successfully added all profiles!"
+// @Success 422 {string} string "Error retrieving the File"
+// @Success 500 {string} string "Error setting the file size || Error parsing file"
 // @Router /users/profile [post]
 // @Security ApiKeyAuth
 func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Request) {
@@ -264,7 +274,7 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 	file, _, err := request.FormFile("file")
 	if err != nil {
 		h.log.Error(err)
-		http.Error(writer, "Error retrieving the File", http.StatusInternalServerError)
+		http.Error(writer, "Error retrieving the File, use 'file' key", http.StatusUnprocessableEntity)
 		return
 	}
 	defer func(file multipart.File) {
@@ -284,7 +294,7 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 
-	writer.Write([]byte("Succesfully added all profiles!"))
+	writer.Write([]byte("Successfully added all profiles!"))
 
 	return
 }
