@@ -51,3 +51,4 @@
 {"L":"INFO","T":"2022-07-14T15:18:43.523+0300","M":"Service successfully started"}
 {"L":"INFO","T":"2022-07-15T15:09:36.240+0300","M":"Service successfully started"}
 {"L":"INFO","T":"2022-07-15T15:13:11.746+0300","M":"Service successfully started"}
+

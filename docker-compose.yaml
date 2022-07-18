@@ -1,6 +1,53 @@
 version: "3.9"
 
 services:
+  backend:
+    image: testik
+    container_name: backend
+    hostname: backend
+    environment:
+     - PORT=7001
+     - HOST=0.0.0.0
+     - KEYCLOAK_HOST=https://kc.scb-monitor.ru
+     - KEYCLOAK_REALM=master
+     - PG_DATABASE=scb_monitor
+     - PG_HOST=scb-monitor.ru
+     - PG_PASSWORD=fjdsj234mrktio4
+     - PG_PORT=5432
+     - PG_USER=scb_monitor
+    ports:
+     - "7001:7001"
+    networks:
+     - default
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+    restart: unless-stopped
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    networks:
+      - default
+  grafana:
+    image: grafana/grafana
+    user: root
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    networks:
+      - default
   jaeger:
     image: jaegertracing/all-in-one:latest
     environment:
@@ -10,8 +57,11 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "9411:9411"
+    container_name: jaeger
+    hostname: jaeger
+    networks:
+      - default
   postgres:
-    container_name: postgres
     image: postgres:12.3-alpine
     restart: always
     ports:
@@ -23,4 +73,33 @@ services:
       APP_DB_USER: app
       APP_DB_PASS: pass
     volumes:
-      - ./scripts/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh 
+      - ./scripts/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh
+    container_name: postgres
+    hostname: postgres
+    networks:
+      - default
+  nodeexporter:
+    image: prom/node-exporter:v1.3.0
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - default
+
+
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16

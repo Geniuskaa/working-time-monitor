@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/MicahParks/keyfunc"
+	"github.com/dlmiddlecote/sqlstats"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -22,6 +25,7 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/logs"
 	"time"
 )
 
@@ -91,9 +95,20 @@ func execute(addr string, conf *config.Config) (err error) {
 		logger.Sync()
 	}()
 
+	collector := sqlstats.NewStatsCollector(conf.DB.DatabaseName, db.Db)
+	// Register it with Prometheus
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(collector)
+	// Add Go module build info.
+	reg.MustRegister(collectors.NewBuildInfoCollector())
+	reg.MustRegister(collectors.NewGoCollector(
+		collectors.WithGoCollections(collectors.GoRuntimeMetricsCollection),
+	))
+	reg.MustRegister(logs.NewExporter("logs.txt"))
+
 	mux := chi.NewRouter()
 	application := server.NewServer(ct, logger, mux, db, conf)
-	application.Init(atom)
+	application.Init(atom, reg)
 
 	return application.Start(addr)
 }
@@ -103,18 +118,19 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 
-	/*fileEncoder := zapcore.NewJSONEncoder(encoderConfig)*/
+	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	/*file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+	file, err := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+
 	if err != nil {
 		panic("Error with creating or opening file")
-	}*/
+	}
 
-	// writeSyncer := zapcore.AddSync(file)
+	writeSyncer := zapcore.AddSync(file)
 	atom := zap.NewAtomicLevelAt(zapcore.InfoLevel)
 	core := zapcore.NewTee(
-		// zapcore.NewCore(fileEncoder, writeSyncer, atom),
+		zapcore.NewCore(fileEncoder, writeSyncer, atom),
 		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), atom),
 	)
 
