@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-chi/chi/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/metrics"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/technic"
 
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -37,15 +38,15 @@ func (s *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (s *Server) Init(atom zap.AtomicLevel, reg *prometheus.Registry) {
-
+	metrics.InitMetrics(reg)
 	authMiddleware := auth.NewMiddleware(s.cfg, s.db, s.logger)
 	serv := user.NewService(s.db, s.logger)
 
 	s.mux.Mount("/internal", technic.NewHandler(s.ctx, s.logger, atom, reg).Routes())
 	s.mux.Mount("/api/v1/swagger/", httpSwagger.WrapHandler)
 
-	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
-	s.mux.With(authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
+	s.mux.With(metrics.RequestsMetricsMiddleware, authMiddleware.Middleware, s.recoverer).Mount("/api/v1/users", user.NewHandler(s.ctx, s.logger, serv).Routes())
+	s.mux.With(metrics.RequestsMetricsMiddleware, authMiddleware.Middleware, s.recoverer).Mount("/api/v1/devices", device.NewHandler(s.ctx, s.logger, device.NewService(s.logger, s.db)).Routes())
 
 }
 func (s *Server) Start(addr string) error {
