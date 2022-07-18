@@ -13,5 +13,6 @@ bin/
 .migrations/
 .logs/logs.txt
 logs.txt
+.grafana
 
 
