@@ -2,6 +2,7 @@ package logs
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"os"
 	"regexp"
@@ -15,7 +16,7 @@ var (
 	logsSent = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "go_logs"),
 		"are written by app.",
-		[]string{"level", "date", "msg"}, nil,
+		[]string{"level", "date", "msg", "id"}, nil,
 	)
 )
 
@@ -37,22 +38,22 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	for _, log := range logs {
+	for i, log := range logs {
 		switch log[0] {
 		case "DEBUG":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 1, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 1, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "INFO":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 2, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 2, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "WARN":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 3, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 3, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "ERROR":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 4, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 4, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "DPANIC":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 5, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 5, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "PANIC":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 6, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 6, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		case "FATAL":
-			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 7, log[0], log[1], log[2])
+			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 7, log[0], log[1], log[2], fmt.Sprintf("id:%d", i))
 		default:
 			ch <- prometheus.MustNewConstMetric(logsSent, prometheus.UntypedValue, 10, "Unsupported level", log[1], log[2])
 		}
