@@ -331,6 +331,10 @@ paths:
           description: Successfully added!
           schema:
             type: string
+        "450":
+          description: You sent empty request. Write some skills and try it again.
+          schema:
+            type: string
       security:
       - ApiKeyAuth: []
       summary: Метод для добавления навыков

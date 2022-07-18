@@ -12,6 +12,6 @@ bin/
 .docker-compose.yaml
 .migrations/
 .logs/logs.txt
-.logs.txt
+logs.txt
 
 

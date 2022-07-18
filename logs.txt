@@ -1,6 +1,0 @@
-{"L":"ERROR","T":"2022-07-18T11:28:05.030+0300","M":"dial tcp [::1]:0: connectex: The requested address is not valid in its context."}
-{"L":"INFO","T":"2022-07-18T11:28:52.024+0300","M":"Service successfully started"}
-{"L":"INFO","T":"2022-07-18T11:55:21.948+0300","M":"Service successfully started"}
-{"L":"ERROR","T":"2022-07-18T11:55:21.952+0300","M":"context canceled"}
-{"L":"INFO","T":"2022-07-18T11:55:32.279+0300","M":"Service successfully started"}
-{"L":"INFO","T":"2022-07-18T12:00:38.172+0300","M":"Service successfully started"}
