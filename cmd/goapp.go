@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
@@ -25,7 +24,6 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
-	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/logs"
 	"time"
 )
 
@@ -99,12 +97,6 @@ func execute(addr string, conf *config.Config) (err error) {
 	// Register it with Prometheus
 	reg := prometheus.NewRegistry()
 	reg.MustRegister(collector)
-	// Add Go module build info.
-	reg.MustRegister(collectors.NewBuildInfoCollector())
-	reg.MustRegister(collectors.NewGoCollector(
-		collectors.WithGoCollections(collectors.GoRuntimeMetricsCollection),
-	))
-	reg.MustRegister(logs.NewExporter("logs.txt"))
 
 	mux := chi.NewRouter()
 	application := server.NewServer(ct, logger, mux, db, conf)

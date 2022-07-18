@@ -46,7 +46,7 @@ func (h *handler) Routes() chi.Router {
 	r.Get("/{user-id}", h.GetUserInfoById)
 	r.Post("/skills", h.AddSkillToUser)
 	r.Post("/profile", h.AddUserProfiles)
-	r.Get("/profile", h.GetUsersProfiles)
+	r.Get("/profile", h.GetUsersProfile)
 
 	return r
 }
@@ -305,20 +305,27 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 	return
 }
 
-// GetUsersProfiles godoc
+// GetUsersProfile godoc
 // @Summary Метод для получения информации о профиле
 // @Description Get all users from DB and return as json
 // @Tags users
 // @Produce  json
-// @Success 200 {array} postgres.UserProfile
+// @Success 200 {string} postgres.UserProfile
 // @Router /users/profile [get]
 // @Security ApiKeyAuth
-func (h *handler) GetUsersProfiles(writer http.ResponseWriter, request *http.Request) {
+func (h *handler) GetUsersProfile(writer http.ResponseWriter, request *http.Request) {
 	tr := otel.Tracer("handler-GetUsersProfiles")
 	ctx, span := tr.Start(h.ctx, "handler-GetUsersProfiles")
 	defer span.End()
 
-	user, err := h.service.getUserProfiles(ctx)
+	userPrincipal, err := auth.GetUserPrincipal(request, ctx)
+	if err != nil {
+		h.log.Error(err)
+		http.Error(writer, "Error parsing jwt token", http.StatusInternalServerError)
+		return
+	}
+
+	user, err := h.service.getUserProfile(ctx, userPrincipal.Email)
 	if err != nil {
 		http.Error(writer, "Error getting user profiles", http.StatusInternalServerError)
 		return

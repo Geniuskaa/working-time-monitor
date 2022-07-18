@@ -26,31 +26,6 @@ definitions:
         example: Some skills
         type: string
     type: object
-  postgres.UserProfile:
-    description: User profile information
-    properties:
-      devices:
-        example: ""
-        type: string
-      display_name:
-        example: Зиннатуллин Эмиль Рамилевич
-        type: string
-      email:
-        example: test@mail.ru
-        type: string
-      employee:
-        example: Go-developer
-        type: string
-      mobile_devices:
-        example: iphone 11
-        type: string
-      phone:
-        example: "+79472738427"
-        type: string
-      skills:
-        example: A lot of skills
-        type: string
-    type: object
   user.EmpolyeeDTO:
     properties:
       id:
@@ -274,9 +249,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/postgres.UserProfile'
-            type: array
+            type: string
       security:
       - ApiKeyAuth: []
       summary: Метод для получения информации о профиле

@@ -2,6 +2,8 @@ package metrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/logs"
 )
 
 type Metrics struct {
@@ -22,4 +24,9 @@ var metrics = Metrics{
 func InitMetrics(reg *prometheus.Registry) {
 	reg.MustRegister(metrics.RequestsTotal)
 	reg.MustRegister(metrics.RequestsDuration)
+	reg.MustRegister(logs.NewExporter("logs.txt"))
+
+	reg.MustRegister(collectors.NewGoCollector(
+		collectors.WithGoCollections(collectors.GoRuntimeMetricsCollection),
+	))
 }

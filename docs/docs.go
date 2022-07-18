@@ -254,10 +254,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/postgres.UserProfile"
-                            }
+                            "type": "string"
                         }
                     }
                 }
@@ -434,40 +431,6 @@ const docTemplate = `{
                 "skills": {
                     "type": "string",
                     "example": "Some skills"
-                }
-            }
-        },
-        "postgres.UserProfile": {
-            "description": "User profile information",
-            "type": "object",
-            "properties": {
-                "devices": {
-                    "type": "string",
-                    "example": ""
-                },
-                "display_name": {
-                    "type": "string",
-                    "example": "Зиннатуллин Эмиль Рамилевич"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "test@mail.ru"
-                },
-                "employee": {
-                    "type": "string",
-                    "example": "Go-developer"
-                },
-                "mobile_devices": {
-                    "type": "string",
-                    "example": "iphone 11"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+79472738427"
-                },
-                "skills": {
-                    "type": "string",
-                    "example": "A lot of skills"
                 }
             }
         },

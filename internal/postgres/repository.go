@@ -18,7 +18,7 @@ type UserRepo interface {
 	GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error)
 	AddSkillsToUserProfile(ctx context.Context, username string, email string, skills string) error
 	PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) (int, error)
-	GetUsersProfiles(ctx context.Context) ([]*UserProfile, error)
+	GetUsersProfile(ctx context.Context, email string) (*UserProfile, error)
 }
 
 func (d *Db) GetUserPrincipalByUsername(ctx context.Context, username string) (*UserPrincipal, error) {
@@ -260,12 +260,12 @@ func (d *Db) PutProfilesToDB(ctx context.Context, users []UserProfileFromExcel) 
 	return countOfSuccesfulTransactions, nil
 }
 
-func (d *Db) GetUsersProfiles(ctx context.Context) ([]*UserProfile, error) {
+func (d *Db) GetUsersProfile(ctx context.Context, email string) (*UserProfile, error) {
 	tr := otel.Tracer("repo-GetUsersProfiles")
 	ct, span := tr.Start(ctx, "repo-GetUsersProfiles")
 	defer span.End()
 
-	rows, err := d.Db.QueryContext(ct,
+	row := d.Db.QueryRowContext(ct,
 		`SELECT usr.display_name,coalesce(usr.phone,' '),usr.email,coalesce(usr.skills, ' '),
        		  e.name_empl,array_to_string(array_agg(d.name_dev), ', '),
        		  coalesce((SELECT array_to_string(array_agg(md.name_mob_dev), ', ')
@@ -274,31 +274,24 @@ func (d *Db) GetUsersProfiles(ctx context.Context) ([]*UserProfile, error) {
             				right join mobile_devices md on md.id = rd.mobile_device_id
         				where u.username=usr.username
         				group by u.username),' ')
-			from users usr
+			from users usr 
     			left outer join employees e on e.id = usr.empl_id
     			left outer join devices d on usr.id = d.user_id
-			group by usr.username, usr.display_name, usr.phone, usr.email, usr.skills, e.name_empl;`)
+			where usr.email=$1
+			group by usr.username, usr.display_name, usr.phone, usr.email, usr.skills, e.name_empl;`, email)
+
+	var result UserProfile
+
+	err := row.Scan(&result.DisplayName, &result.Phone, &result.Email, &result.Skills, &result.Employee,
+		&result.Devices, &result.MobileDevices)
 	if err != nil {
 		return nil, err
 	}
 
-	defer rows.Close()
-
-	var result []*UserProfile
-	for rows.Next() {
-		user := &UserProfile{}
-		err = rows.Scan(&user.DisplayName, &user.Phone, &user.Email, &user.Skills, &user.Employee,
-			&user.Devices, &user.MobileDevices)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, user)
-	}
-
-	err = rows.Err()
+	err = row.Err()
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return &result, nil
 }

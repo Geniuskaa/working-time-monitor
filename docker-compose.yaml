@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   backend:
-    image: testik
+    image: sovcom-app
     container_name: backend
     hostname: backend
     environment:
