@@ -242,7 +242,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all users from DB and return as json",
+                "description": "Get one user` + "`" + `s profile from DB and return as json",
                 "produces": [
                     "application/json"
                 ],
@@ -254,7 +254,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/postgres.UserProfile"
                         }
                     }
                 }
@@ -302,6 +302,34 @@ const docTemplate = `{
                         "description": "Error setting the file size || Error parsing file",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profiles": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all users from DB and return as json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Метод для получения информации о профилях всех сотрудников",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/postgres.UserProfile"
+                            }
                         }
                     }
                 }
@@ -380,10 +408,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/user.UserDTO"
-                            }
+                            "$ref": "#/definitions/user.UserDTO"
                         }
                     },
                     "404": {
@@ -431,6 +456,40 @@ const docTemplate = `{
                 "skills": {
                     "type": "string",
                     "example": "Some skills"
+                }
+            }
+        },
+        "postgres.UserProfile": {
+            "description": "User profile information",
+            "type": "object",
+            "properties": {
+                "devices": {
+                    "type": "string",
+                    "example": ""
+                },
+                "display_name": {
+                    "type": "string",
+                    "example": "Зиннатуллин Эмиль Рамилевич"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "test@mail.ru"
+                },
+                "employee": {
+                    "type": "string",
+                    "example": "Go-developer"
+                },
+                "mobile_devices": {
+                    "type": "string",
+                    "example": "iphone 11"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+79472738427"
+                },
+                "skills": {
+                    "type": "string",
+                    "example": "A lot of skills"
                 }
             }
         },

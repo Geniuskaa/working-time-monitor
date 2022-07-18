@@ -26,6 +26,31 @@ definitions:
         example: Some skills
         type: string
     type: object
+  postgres.UserProfile:
+    description: User profile information
+    properties:
+      devices:
+        example: ""
+        type: string
+      display_name:
+        example: Зиннатуллин Эмиль Рамилевич
+        type: string
+      email:
+        example: test@mail.ru
+        type: string
+      employee:
+        example: Go-developer
+        type: string
+      mobile_devices:
+        example: iphone 11
+        type: string
+      phone:
+        example: "+79472738427"
+        type: string
+      skills:
+        example: A lot of skills
+        type: string
+    type: object
   user.EmpolyeeDTO:
     properties:
       id:
@@ -184,9 +209,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/user.UserDTO'
-            type: array
+            $ref: '#/definitions/user.UserDTO'
         "404":
           description: We couldn`t find such user
           schema:
@@ -242,14 +265,14 @@ paths:
       - users
   /users/profile:
     get:
-      description: Get all users from DB and return as json
+      description: Get one user`s profile from DB and return as json
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/postgres.UserProfile'
       security:
       - ApiKeyAuth: []
       summary: Метод для получения информации о профиле
@@ -283,6 +306,23 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Метод для получения информации о профиле
+      tags:
+      - users
+  /users/profiles:
+    get:
+      description: Get all users from DB and return as json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/postgres.UserProfile'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Метод для получения информации о профилях всех сотрудников
       tags:
       - users
   /users/skills:

@@ -47,6 +47,7 @@ func (h *handler) Routes() chi.Router {
 	r.Post("/skills", h.AddSkillToUser)
 	r.Post("/profile", h.AddUserProfiles)
 	r.Get("/profile", h.GetUsersProfile)
+	r.Get("/profiles", h.GetUsersProfiles)
 
 	return r
 }
@@ -124,7 +125,7 @@ func (h *handler) GetUsersByEmployeeId(writer http.ResponseWriter, request *http
 // @Tags users
 // @Produce  json
 // @Param user-id path int true "User ID"
-// @Success 200 {array} user.UserDTO
+// @Success 200 {object} user.UserDTO
 // @Failure 404 {string} string "We couldn`t find such user"
 // @Router /users/{user-id} [get]
 // @Security ApiKeyAuth
@@ -307,15 +308,15 @@ func (h *handler) AddUserProfiles(writer http.ResponseWriter, request *http.Requ
 
 // GetUsersProfile godoc
 // @Summary Метод для получения информации о профиле
-// @Description Get all users from DB and return as json
+// @Description Get one user`s profile from DB and return as json
 // @Tags users
 // @Produce  json
-// @Success 200 {string} postgres.UserProfile
+// @Success 200 {object} postgres.UserProfile
 // @Router /users/profile [get]
 // @Security ApiKeyAuth
 func (h *handler) GetUsersProfile(writer http.ResponseWriter, request *http.Request) {
-	tr := otel.Tracer("handler-GetUsersProfiles")
-	ctx, span := tr.Start(h.ctx, "handler-GetUsersProfiles")
+	tr := otel.Tracer("handler-GetUserProfile")
+	ctx, span := tr.Start(h.ctx, "handler-GetUserProfile")
 	defer span.End()
 
 	userPrincipal, err := auth.GetUserPrincipal(request, ctx)
@@ -326,6 +327,37 @@ func (h *handler) GetUsersProfile(writer http.ResponseWriter, request *http.Requ
 	}
 
 	user, err := h.service.getUserProfile(ctx, userPrincipal.Email)
+	if err != nil {
+		http.Error(writer, "Error getting user profile", http.StatusInternalServerError)
+		return
+	}
+
+	body, err := json.Marshal(user)
+	if err != nil {
+		http.Error(writer, "Error marshaling user profile", http.StatusInternalServerError)
+		return
+	}
+
+	writer.Header().Add("Content-Type", "application/json")
+	writer.Write(body)
+
+	return
+}
+
+// GetUsersProfiles godoc
+// @Summary Метод для получения информации о профилях всех сотрудников
+// @Description Get all users from DB and return as json
+// @Tags users
+// @Produce  json
+// @Success 200 {array} postgres.UserProfile
+// @Router /users/profiles [get]
+// @Security ApiKeyAuth
+func (h *handler) GetUsersProfiles(writer http.ResponseWriter, request *http.Request) {
+	tr := otel.Tracer("handler-GetUsersProfiles")
+	ctx, span := tr.Start(h.ctx, "handler-GetUsersProfiles")
+	defer span.End()
+
+	user, err := h.service.getUserProfiles(ctx)
 	if err != nil {
 		http.Error(writer, "Error getting user profiles", http.StatusInternalServerError)
 		return
