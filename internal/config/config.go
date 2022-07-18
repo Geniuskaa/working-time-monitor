@@ -7,12 +7,12 @@ import (
 )
 
 type App struct {
-	Port string `yaml:"port"`
-	Host string `yaml:"host"`
+	Port string `yaml:"port" env:"PORT" env-default:"7001"`
+	Host string `yaml:"host" env:"HOST" env-default:"0.0.0.0"`
 }
 
 type DB struct {
-	MigrationsSourceURL string `yaml:"migrationsSourceURL"`
+	MigrationsSourceURL string
 	Hostname            string `yaml:"hostname" env:"PG_HOST"`
 	Port                int    `yaml:"port" env:"PG_PORT"`
 	Username            string `yaml:"username" env:"PG_USER"`
@@ -33,11 +33,14 @@ type Config struct {
 	Keycloak Keycloak `yaml:"keycloak"`
 }
 
-func NewConfig(profile string) (cfg *Config, err error) {
+func NewConfig() (cfg *Config, err error) {
 	cfg = &Config{}
-	cfgPath := fmt.Sprintf("configs/%s.yml", profile)
-	err = cleanenv.ReadConfig(cfgPath, cfg)
+
+	err = cleanenv.ReadEnv(cfg)
+
 	if err != nil {
+		description, err := cleanenv.GetDescription(cfg, nil)
+		fmt.Println(description)
 		return nil, err
 	}
 	return cfg, nil

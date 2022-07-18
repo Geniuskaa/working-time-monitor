@@ -24,6 +24,7 @@ import (
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/config"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/server"
+	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/logs"
 	"time"
 )
 
@@ -36,7 +37,7 @@ const (
 //var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
-	conf, err := config.NewConfig("dev")
+	conf, err := config.NewConfig()
 	if err != nil {
 		panic("Error with reading config")
 	}
@@ -90,6 +91,7 @@ func execute(addr string, conf *config.Config) (err error) {
 	reg.MustRegister(collectors.NewGoCollector(
 		collectors.WithGoCollections(collectors.GoRuntimeMetricsCollection),
 	))
+	reg.MustRegister(logs.NewExporter("logs.txt"))
 
 	mux := chi.NewRouter()
 	application := server.NewServer(ct, logger, mux, db, conf)
@@ -106,7 +108,7 @@ func loggerInit() (*zap.SugaredLogger, zap.AtomicLevel) {
 	fileEncoder := zapcore.NewJSONEncoder(encoderConfig)
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	file, err := os.OpenFile("./logs/logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
+	file, err := os.OpenFile("logs.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666) // os.Create("./logs/logs.txt")
 	if err != nil {
 		panic("Error with creating or opening file")
 	}
