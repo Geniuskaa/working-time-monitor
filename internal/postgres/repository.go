@@ -142,7 +142,7 @@ func (d *Db) AddSkillsToUserProfile(ctx context.Context, username string, email 
 	var oldSkills string
 	err = row.Scan(&oldSkills)
 	var newSkills string
-	if err != nil {
+	if err != nil || strings.EqualFold(oldSkills, "") {
 		newSkills = skills
 	} else {
 		newSkills = fmt.Sprintf(oldSkills + "," + skills)
