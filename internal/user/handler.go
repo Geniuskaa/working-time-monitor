@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/auth"
 	"scb-mobile/scb-monitor/scb-monitor-backend/go-app/internal/postgres"
@@ -208,6 +209,7 @@ func (h *handler) GetEmployeeList(writer http.ResponseWriter, request *http.Requ
 // @Param skills body postgres.Skill true "Skills what we want to add"
 // @Produce  plain
 // @Success 200 {string} string "Successfully added!"
+// @Failure 450 {string} string "You sent empty request. Write some skills and try it again."
 // @Router /users/skills [post]
 // @Security ApiKeyAuth
 func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Request) {
@@ -234,6 +236,10 @@ func (h *handler) AddSkillToUser(writer http.ResponseWriter, request *http.Reque
 	if err != nil {
 		h.log.Error(err)
 		http.Error(writer, "Error unmarshaling data", http.StatusInternalServerError)
+		return
+	}
+	if strings.EqualFold(reqData.Skills, "") {
+		http.Error(writer, "You sent empty request. Write some skills and try it again.", 450)
 		return
 	}
 

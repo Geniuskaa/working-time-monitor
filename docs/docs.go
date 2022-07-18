@@ -345,6 +345,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "450": {
+                        "description": "You sent empty request. Write some skills and try it again.",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
