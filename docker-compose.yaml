@@ -8,11 +8,11 @@ services:
     environment:
      - PORT=7001
      - HOST=0.0.0.0
-     - KEYCLOAK_HOST=https://kc.scb-monitor.ru
+     - KEYCLOAK_HOST=value
      - KEYCLOAK_REALM=master
-     - PG_DATABASE=scb_monitor
-     - PG_HOST=scb-monitor.ru
-     - PG_PASSWORD=fjdsj234mrktio4
+     - PG_DATABASE=value
+     - PG_HOST=value
+     - PG_PASSWORD=value
      - PG_PORT=5432
      - PG_USER=scb_monitor
     ports:
