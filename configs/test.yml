@@ -11,5 +11,5 @@ db:
   databaseName: golang
 
 keycloak:
-  base-path: https://kc.scb-monitor.ru
+  base-path: https://kc.some-url.ru
   realm: master
